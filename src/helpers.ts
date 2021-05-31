@@ -29,4 +29,4 @@ export async function setupCommands(guild: Guild) {
   }
 }
 
-export const YOUTUBE_URL_TEST = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
+export const YOUTUBE_URL_TEST = /^(https?:\/\/)?((www|music|m)\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
