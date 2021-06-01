@@ -1,12 +1,8 @@
-import { Client, Intents } from 'discord.js';
+import Client from './client';
 import commands from './commands';
 import { setupCommands, env } from './helpers';
 
-const client = new Client({
-  intents: [
-    Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES,
-  ],
-});
+const client = new Client();
 
 client.once('ready', () => {
   const guild = client.guilds.cache.get(env.GUILD);
@@ -18,7 +14,7 @@ client.once('ready', () => {
 client.on('interaction', async (interaction) => {
   if (!interaction.isCommand()) return;
   const { commandName } = interaction;
-  if (commandName && commands[commandName]) commands[commandName](interaction);
+  if (commandName && commands[commandName]) commands[commandName](client, interaction);
 });
 
 client.login(env.TOKEN);

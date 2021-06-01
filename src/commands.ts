@@ -1,37 +1,42 @@
 import { CommandInteraction, VoiceChannel } from 'discord.js';
-import ytdl from 'ytdl-core-discord';
+
+import Client from './client';
 import { YOUTUBE_URL_TEST } from './helpers';
 
 // eslint-disable-next-line no-unused-vars
-type Command = (command: CommandInteraction) => void;
+type Command = (client: Client, command: CommandInteraction) => void;
 
 type Commands = {
   [key: string]: Command;
 };
 
 const commands: Commands = {
-  async play(interaction) {
+  async play(client, interaction) {
     const { options } = interaction;
     const url = options.find((x) => x.name === 'url')?.value?.toString();
-    if (url?.match(YOUTUBE_URL_TEST)) {
-      const { member } = interaction;
-      const voice: VoiceChannel | null = await member.voice.channel;
-      if (!voice) return;
+    if (!url?.match(YOUTUBE_URL_TEST)) return;
 
-      const voiceConnection = await voice.join();
-      const { videoDetails: videoInfo } = await ytdl.getBasicInfo(url);
-      interaction.reply({
-        content: `Playing **${videoInfo.title}**`,
-        ephemeral: true,
-      });
-      voiceConnection.play(
-        await ytdl(url.toString(), {
-          filter: 'audioonly',
-          quality: 'highestaudio',
-          highWaterMark: 1024 * 1024 * 8,
-        }), { type: 'opus', volume: 0.5 },
-      );
+    const { member } = interaction;
+    const voice: VoiceChannel | null = await member.voice.channel;
+    if (!voice) return;
+
+    if (!client.connection) {
+      await client.join(voice);
     }
+
+    const playing = await client.play(url);
+    interaction.reply({
+      content: `Playing **${playing.info.title}**`,
+      ephemeral: true,
+    });
+  },
+  async whatplaying(client, interaction) {
+    interaction.reply({
+      content: client.playing
+        ? `Playing **${client.playing.info.title}**`
+        : 'Currently not playing audio',
+      ephemeral: !client.playing,
+    });
   },
 };
 

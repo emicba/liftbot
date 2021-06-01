@@ -18,14 +18,22 @@ export async function setupCommands(guild: Guild) {
       description: 'Play audio from Youtube',
       options: [
         {
-          name: 'url', description: 'video url', type: 'STRING', required: true,
+          name: 'url',
+          description: 'video url',
+          type: 'STRING',
+          required: true,
         },
       ],
+    },
+    {
+      name: 'whatplaying',
+      description: 'Describes the playing song',
     },
   ];
   const missingCommands = commands.filter((x) => !guildCommands.includes(x.name));
   if (missingCommands.length) {
-    guild.commands.add(missingCommands);
+    guild.commands.set(commands);
+    console.log(`✨ added ${missingCommands.length} commands`);
   }
 }
 
