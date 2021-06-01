@@ -1,7 +1,6 @@
 import { CommandInteraction, VoiceChannel } from 'discord.js';
-
+import ytdl from 'ytdl-core';
 import Client from './client';
-import { YOUTUBE_URL_TEST } from './helpers';
 
 // eslint-disable-next-line no-unused-vars
 type Command = (client: Client, command: CommandInteraction) => void;
@@ -14,7 +13,13 @@ const commands: Commands = {
   async play(client, interaction) {
     const { options } = interaction;
     const url = options.find((x) => x.name === 'url')?.value?.toString();
-    if (!url?.match(YOUTUBE_URL_TEST)) return;
+    if (!url || !ytdl.validateURL(url)) {
+      interaction.reply({
+        content: 'Invalid url',
+        ephemeral: true,
+      });
+      return;
+    }
 
     const { member } = interaction;
     const voice: VoiceChannel | null = await member.voice.channel;
@@ -24,9 +29,13 @@ const commands: Commands = {
       await client.join(voice);
     }
 
-    const playing = await client.play(url);
+    const response = await client.play(url);
+
+    const { playing } = client;
+    if (!playing) return;
+
     interaction.reply({
-      content: `Playing **${playing.info.title}**`,
+      content: `<@${member.id}> - ${response} ${playing.info.title}`,
       ephemeral: true,
     });
   },

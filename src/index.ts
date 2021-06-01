@@ -4,7 +4,8 @@ import { setupCommands, env } from './helpers';
 
 const client = new Client();
 
-client.once('ready', () => {
+client.once('ready', async () => {
+  await client.guilds.fetch();
   const guild = client.guilds.cache.get(env.GUILD);
   if (!guild) throw new Error(`Couldn't find a guild with id of ${env.GUILD}`);
   console.log('✨');

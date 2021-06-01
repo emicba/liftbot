@@ -36,5 +36,3 @@ export async function setupCommands(guild: Guild) {
     console.log(`✨ added ${missingCommands.length} commands`);
   }
 }
-
-export const YOUTUBE_URL_TEST = /^(https?:\/\/)?((www|music|m)\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
