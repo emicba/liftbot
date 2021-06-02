@@ -1,6 +1,8 @@
 import { ApplicationCommandData, Guild } from 'discord.js';
 import dotenv from 'dotenv';
 import { cleanEnv, str } from 'envalid';
+import ytdl from 'ytdl-core';
+import ytpl from 'ytpl';
 
 dotenv.config();
 
@@ -36,3 +38,12 @@ export async function setupCommands(guild: Guild) {
     console.log(`✨ added ${missingCommands.length} commands`);
   }
 }
+
+export const isVideo = ytdl.validateURL;
+export const isPlaylist = ytpl.validateID;
+
+export const ytdlOptions: ytdl.downloadOptions = {
+  filter: 'audioonly',
+  quality: 'highestaudio',
+  highWaterMark: 1024 * 1024 * 8,
+};

@@ -5,13 +5,13 @@ import {
   VoiceChannel,
   VoiceConnection,
 } from 'discord.js';
-import { Readable } from 'stream';
-import { MoreVideoDetails } from 'ytdl-core';
+import ytpl from 'ytpl';
 import ytdl from 'ytdl-core-discord';
+import { isPlaylist, isVideo, ytdlOptions } from './helpers';
 
 type Audio = {
-  buffer: Promise<Readable>;
-  info: MoreVideoDetails;
+  title: string;
+  url: string;
 };
 
 enum PlayResponse {
@@ -46,24 +46,33 @@ class Client extends DiscordClient {
 
   async play(url: string) {
     if (!this.connection) throw new Error('An active connection must exist to play a song');
-    const { videoDetails } = await ytdl.getBasicInfo(url);
-    this.queue.push({
-      info: videoDetails,
-      buffer: ytdl(url, {
-        filter: 'audioonly',
-        quality: 'highestaudio',
-        highWaterMark: 1024 * 1024 * 8,
-      }),
-    });
+    if (isVideo(url)) {
+      const { videoDetails } = await ytdl.getBasicInfo(url);
+      this.queue.push({
+        title: videoDetails.title,
+        url: videoDetails.video_url,
+      });
+    }
+    if (isPlaylist(url)) {
+      const { items } = await ytpl(url, { pages: 1 });
+      const playlist = items.map((track) => ({
+        title: track.title,
+        url: track.url,
+      }));
+      this.queue = this.queue.concat(playlist);
+    }
     if (this.playing) return PlayResponse.Queued;
     return this.playQueue();
   }
 
   async playQueue() {
-    if (!this.connection || !this.queue.length) return PlayResponse.Failed;
+    if (!this.connection || !this.queue.length) {
+      this.playing = null;
+      return PlayResponse.Failed;
+    }
     this.playing = this.queue.shift()!;
     this.dispatcher = this.connection
-      .play(await this.playing.buffer, {
+      .play(await ytdl(this.playing.url, ytdlOptions), {
         type: 'opus',
         volume: 0.5,
       })
