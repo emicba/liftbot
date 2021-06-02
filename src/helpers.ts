@@ -1,4 +1,4 @@
-import { ApplicationCommandData, Guild } from 'discord.js';
+import { ApplicationCommandData, CommandInteractionOption, Guild } from 'discord.js';
 import dotenv from 'dotenv';
 import { cleanEnv, str } from 'envalid';
 import ytdl from 'ytdl-core';
@@ -14,7 +14,7 @@ export const env = cleanEnv(process.env, {
 export async function setupCommands(guild: Guild) {
   await guild.commands.fetch();
   const guildCommands = guild.commands.cache.map((x) => x.name);
-  const commands: Array<ApplicationCommandData> = [
+  const commands: ApplicationCommandData[] = [
     {
       name: 'play',
       description: 'Play audio from Youtube',
@@ -25,6 +25,11 @@ export async function setupCommands(guild: Guild) {
           type: 'STRING',
           required: true,
         },
+        {
+          name: 'shuffle',
+          description: 'shuffle playlist before adding it to queue',
+          type: 'BOOLEAN',
+        },
       ],
     },
     {
@@ -33,7 +38,7 @@ export async function setupCommands(guild: Guild) {
     },
   ];
   const missingCommands = commands.filter((x) => !guildCommands.includes(x.name));
-  if (missingCommands.length) {
+  if (missingCommands.length || env.isProduction) {
     guild.commands.set(commands);
     console.log(`✨ added ${missingCommands.length} commands`);
   }
@@ -47,3 +52,16 @@ export const ytdlOptions: ytdl.downloadOptions = {
   quality: 'highestaudio',
   highWaterMark: 1024 * 1024 * 8,
 };
+
+export function findOption<T>(options: CommandInteractionOption[], name: string): T | undefined {
+  return options.find((x) => x.name === name)?.value as any;
+}
+
+export function shuffle<T>(arr: T[]) {
+  const array = [...arr];
+  for (let i = 0; i < array.length; i += 1) {
+    const randomIndex = Math.floor(Math.random() * array.length);
+    [array[randomIndex], array[i]] = [array[i], array[randomIndex]];
+  }
+  return array;
+}

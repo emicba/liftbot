@@ -20,5 +20,11 @@ module.exports = {
     'no-unused-vars': 0,
     '@typescript-eslint/no-unused-vars': ['error'],
     'prettier/prettier': 'error',
+    'object-curly-newline': [
+      'error',
+      {
+        ImportDeclaration: { multiline: true },
+      },
+    ],
   },
 };

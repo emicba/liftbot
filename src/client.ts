@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import ytpl from 'ytpl';
 import ytdl from 'ytdl-core-discord';
-import { isPlaylist, isVideo, ytdlOptions } from './helpers';
+import { isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
 
 type Audio = {
   title: string;
@@ -34,7 +34,7 @@ class Client extends DiscordClient {
 
   playing: Audio | null | undefined;
 
-  queue: Array<Audio>;
+  queue: Audio[];
 
   connection: VoiceConnection | undefined;
 
@@ -44,7 +44,7 @@ class Client extends DiscordClient {
     this.connection = await channel.join();
   }
 
-  async play(url: string) {
+  async play(url: string, shouldShuffle: boolean | undefined) {
     if (!this.connection) throw new Error('An active connection must exist to play a song');
     if (isVideo(url)) {
       const { videoDetails } = await ytdl.getBasicInfo(url);
@@ -55,10 +55,11 @@ class Client extends DiscordClient {
     }
     if (isPlaylist(url)) {
       const { items } = await ytpl(url, { pages: 1 });
-      const playlist = items.map((track) => ({
+      let playlist = items.map((track) => ({
         title: track.title,
         url: track.url,
       }));
+      if (shouldShuffle) playlist = shuffle(playlist);
       this.queue = this.queue.concat(playlist);
     }
     if (this.playing) return PlayResponse.Queued;

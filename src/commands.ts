@@ -1,6 +1,6 @@
 import { CommandInteraction, VoiceChannel } from 'discord.js';
 import Client from './client';
-import { isPlaylist, isVideo } from './helpers';
+import { findOption, isPlaylist, isVideo } from './helpers';
 
 // eslint-disable-next-line no-unused-vars
 type Command = (client: Client, command: CommandInteraction) => void;
@@ -12,7 +12,8 @@ type Commands = {
 const commands: Commands = {
   async play(client, interaction) {
     const { options } = interaction;
-    const url = options.find((x) => x.name === 'url')?.value?.toString();
+    const url = findOption<string>(options, 'url')?.toString();
+    const shouldShuffle = findOption<boolean>(options, 'shuffle');
     if (!url || isVideo(url) === isPlaylist(url)) {
       interaction.reply({
         content: 'Invalid url',
@@ -31,7 +32,7 @@ const commands: Commands = {
 
     interaction.defer({ ephemeral: true });
 
-    const response = await client.play(url);
+    const response = await client.play(url, shouldShuffle);
 
     const { playing } = client;
     if (!playing) return;
