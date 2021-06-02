@@ -65,3 +65,7 @@ export function shuffle<T>(arr: T[]) {
   }
   return array;
 }
+
+export function bestThumbnail(thumbnails: ytdl.thumbnail[]) {
+  return thumbnails.sort((a, b) => b.width - a.width)[0];
+}
