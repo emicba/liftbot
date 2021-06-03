@@ -1,4 +1,4 @@
-import { CommandInteraction, VoiceChannel } from 'discord.js';
+import { CommandInteraction, MessageEmbed, VoiceChannel } from 'discord.js';
 import ytdl from 'ytdl-core';
 import Client from './client';
 import { bestThumbnail, findOption, isPlaylist, isVideo } from './helpers';
@@ -55,13 +55,7 @@ const commands: Commands = {
     const { videoDetails } = await ytdl.getBasicInfo(url);
     const thumbnail = bestThumbnail(videoDetails.thumbnails);
     return interaction.editReply({
-      embeds: [
-        {
-          title,
-          color: null,
-          image: { url: thumbnail.url },
-        },
-      ],
+      embeds: [new MessageEmbed().setTitle(title).setImage(thumbnail.url)],
     });
   },
 };
