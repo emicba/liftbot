@@ -80,6 +80,10 @@ class Client extends DiscordClient {
       .on('finish', () => this.playQueue());
     return PlayResponse.Played;
   }
+
+  async playNext() {
+    this.dispatcher?.end();
+  }
 }
 
 export default Client;

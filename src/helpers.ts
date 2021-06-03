@@ -1,4 +1,9 @@
-import { ApplicationCommandData, CommandInteractionOption, Guild } from 'discord.js';
+import {
+  ApplicationCommandData,
+  CommandInteraction,
+  CommandInteractionOption,
+  Guild,
+} from 'discord.js';
 import dotenv from 'dotenv';
 import { cleanEnv, str } from 'envalid';
 import ytdl from 'ytdl-core';
@@ -36,6 +41,10 @@ export async function setupCommands(guild: Guild) {
       name: 'whatplaying',
       description: 'Describes the playing song',
     },
+    {
+      name: 'skip',
+      description: 'Skips to the next song',
+    },
   ];
   const missingCommands = commands.filter((x) => !guildCommands.includes(x.name));
   if (missingCommands.length || env.isProduction) {
@@ -68,4 +77,11 @@ export function shuffle<T>(arr: T[]) {
 
 export function bestThumbnail(thumbnails: ytdl.thumbnail[]) {
   return thumbnails.sort((a, b) => b.width - a.width)[0];
+}
+
+export function replyNotPlayingErr(interaction: CommandInteraction) {
+  return interaction.reply({
+    content: 'Currently not playing audio',
+    ephemeral: true,
+  });
 }
