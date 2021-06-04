@@ -32,19 +32,24 @@ class Client extends DiscordClient {
     this.queue = [];
   }
 
-  playing: Audio | null | undefined;
+  playing?: Audio | null;
 
   queue: Audio[];
 
-  connection: VoiceConnection | undefined;
+  connection?: VoiceConnection | null;
 
-  dispatcher: StreamDispatcher | undefined;
+  dispatcher?: StreamDispatcher;
 
   async join(channel: VoiceChannel) {
     this.connection = await channel.join();
+    this.connection.on('disconnect', () => {
+      this.playing = null;
+      this.connection = null;
+      this.queue = [];
+    });
   }
 
-  async play(url: string, shouldShuffle: boolean | undefined) {
+  async play(url: string, shouldShuffle?: boolean) {
     if (!this.connection) throw new Error('An active connection must exist to play a song');
     if (isVideo(url)) {
       const { videoDetails } = await ytdl.getBasicInfo(url);
