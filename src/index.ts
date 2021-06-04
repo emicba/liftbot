@@ -1,6 +1,7 @@
 import Client from './client';
 import commands from './commands';
-import { setupCommands, env } from './helpers';
+import env from './env';
+import { setupCommands } from './helpers';
 
 const client = new Client();
 

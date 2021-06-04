@@ -4,17 +4,9 @@ import {
   CommandInteractionOption,
   Guild,
 } from 'discord.js';
-import dotenv from 'dotenv';
-import { cleanEnv, str } from 'envalid';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
-
-dotenv.config();
-
-export const env = cleanEnv(process.env, {
-  TOKEN: str(),
-  GUILD: str(),
-});
+import env from './env';
 
 export async function setupCommands(guild: Guild) {
   await guild.commands.fetch();
