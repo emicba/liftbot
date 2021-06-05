@@ -1,7 +1,13 @@
 import { CommandInteraction, GuildMember, MessageEmbed, VoiceChannel } from 'discord.js';
 import ytdl from 'ytdl-core';
 import Client from './client';
-import { bestThumbnail, isPlaylist, isVideo, replyNotPlayingErr } from './helpers';
+import {
+  bestThumbnail,
+  isPlaylist,
+  isVideo,
+  replyNotPlayingErr,
+  statusEmebed as statusEmbed,
+} from './helpers';
 
 // eslint-disable-next-line no-unused-vars
 type Command = (client: Client, command: CommandInteraction) => void;
@@ -32,15 +38,15 @@ const commands: Commands = {
       await client.join(voice);
     }
 
-    interaction.defer({ ephemeral: true });
+    interaction.defer();
 
-    const response = await client.play(url, shouldShuffle);
+    const { status, entry } = await client.play(url, shouldShuffle);
 
     const { playing } = client;
-    if (!playing) return;
+    if (!playing || !entry) return;
 
     interaction.editReply({
-      content: `<@${member?.user.id}> - ${response} ${playing.title}`,
+      embeds: [statusEmbed(status, entry)],
     });
   },
   async whatplaying(client, interaction) {

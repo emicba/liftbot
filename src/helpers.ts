@@ -1,7 +1,8 @@
-import { ApplicationCommandData, CommandInteraction, Guild } from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, Guild, MessageEmbed } from 'discord.js';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import env from './env';
+import { Audio, ResponseStatus } from './client';
 
 export async function setupCommands(guild: Guild) {
   await guild.commands.fetch();
@@ -67,4 +68,11 @@ export function replyNotPlayingErr(interaction: CommandInteraction) {
     content: 'Currently not playing audio',
     ephemeral: true,
   });
+}
+
+export function statusEmebed(status: ResponseStatus, entry: Audio | Audio[]) {
+  const title = `${status} ${Array.isArray(entry) ? `${entry.length} tracks` : entry.title}`;
+  const embed = new MessageEmbed().setTitle(title);
+  if (!Array.isArray(entry)) embed.setURL(entry.url);
+  return embed;
 }

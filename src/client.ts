@@ -9,16 +9,32 @@ import ytpl from 'ytpl';
 import ytdl from 'ytdl-core-discord';
 import { isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
 
-type Audio = {
+export type Audio = {
   title: string;
   url: string;
 };
 
-enum PlayResponse {
+export enum ResponseStatus {
   Played = 'Playing',
   Queued = 'Queued',
   Failed = 'Failed',
 }
+
+interface PlayedResponse {
+  status: ResponseStatus.Played;
+  entry: Audio;
+}
+
+interface QueuedResponse {
+  status: ResponseStatus.Queued;
+  entry: Audio | Audio[];
+}
+
+interface FailedResponse {
+  status: ResponseStatus.Failed;
+}
+
+type PlayResponse = PlayedResponse | QueuedResponse | FailedResponse;
 
 class Client extends DiscordClient {
   constructor() {
@@ -53,28 +69,32 @@ class Client extends DiscordClient {
     if (!this.connection) throw new Error('An active connection must exist to play a song');
     if (isVideo(url)) {
       const { videoDetails } = await ytdl.getBasicInfo(url);
-      this.queue.push({
+      const queued: Audio = {
         title: videoDetails.title,
         url: videoDetails.video_url,
-      });
+      };
+      this.queue.push(queued);
+      if (this.playing) return { status: ResponseStatus.Queued, entry: queued };
+      return this.playQueue();
     }
     if (isPlaylist(url)) {
       const { items } = await ytpl(url, { pages: 1 });
-      let playlist = items.map((track) => ({
+      let queued: Audio[] = items.map((track) => ({
         title: track.title,
         url: track.url,
       }));
-      if (shouldShuffle) playlist = shuffle(playlist);
-      this.queue = this.queue.concat(playlist);
+      if (shouldShuffle) queued = shuffle(queued);
+      this.queue = this.queue.concat(queued);
+      this.playQueue();
+      return { status: ResponseStatus.Queued, entry: queued };
     }
-    if (this.playing) return PlayResponse.Queued;
-    return this.playQueue();
+    return { status: ResponseStatus.Failed };
   }
 
   async playQueue(): Promise<PlayResponse> {
     if (!this.connection || !this.queue.length) {
       this.playing = null;
-      return PlayResponse.Failed;
+      return { status: ResponseStatus.Failed };
     }
     this.playing = this.queue.shift()!;
     this.dispatcher = this.connection
@@ -85,7 +105,7 @@ class Client extends DiscordClient {
       .on('finish', () => {
         this.playQueue();
       });
-    return PlayResponse.Played;
+    return { status: ResponseStatus.Played, entry: this.playing };
   }
 
   async playNext() {
