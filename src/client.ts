@@ -85,7 +85,7 @@ class Client extends DiscordClient {
       }));
       if (shouldShuffle) queued = shuffle(queued);
       this.queue = this.queue.concat(queued);
-      this.playQueue();
+      if (!this.playing) this.playQueue();
       return { status: ResponseStatus.Queued, entry: queued };
     }
     return { status: ResponseStatus.Failed };
