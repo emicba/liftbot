@@ -71,7 +71,7 @@ class Client extends DiscordClient {
     return this.playQueue();
   }
 
-  async playQueue() {
+  async playQueue(): Promise<PlayResponse> {
     if (!this.connection || !this.queue.length) {
       this.playing = null;
       return PlayResponse.Failed;
@@ -82,7 +82,9 @@ class Client extends DiscordClient {
         type: 'opus',
         volume: 0.5,
       })
-      .on('finish', () => this.playQueue());
+      .on('finish', () => {
+        this.playQueue();
+      });
     return PlayResponse.Played;
   }
 

@@ -1,9 +1,4 @@
-import {
-  ApplicationCommandData,
-  CommandInteraction,
-  CommandInteractionOption,
-  Guild,
-} from 'discord.js';
+import { ApplicationCommandData, CommandInteraction, Guild } from 'discord.js';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import env from './env';
@@ -53,10 +48,6 @@ export const ytdlOptions: ytdl.downloadOptions = {
   quality: 'highestaudio',
   highWaterMark: 1024 * 1024 * 8,
 };
-
-export function findOption<T>(options: CommandInteractionOption[], name: string): T | undefined {
-  return options.find((x) => x.name === name)?.value as any;
-}
 
 export function shuffle<T>(arr: T[]) {
   const array = [...arr];

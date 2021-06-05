@@ -1,7 +1,7 @@
-import { CommandInteraction, MessageEmbed, VoiceChannel } from 'discord.js';
+import { CommandInteraction, GuildMember, MessageEmbed, VoiceChannel } from 'discord.js';
 import ytdl from 'ytdl-core';
 import Client from './client';
-import { bestThumbnail, findOption, isPlaylist, isVideo, replyNotPlayingErr } from './helpers';
+import { bestThumbnail, isPlaylist, isVideo, replyNotPlayingErr } from './helpers';
 
 // eslint-disable-next-line no-unused-vars
 type Command = (client: Client, command: CommandInteraction) => void;
@@ -13,8 +13,8 @@ type Commands = {
 const commands: Commands = {
   async play(client, interaction) {
     const { options } = interaction;
-    const url = findOption<string>(options, 'url')?.toString();
-    const shouldShuffle = findOption<boolean>(options, 'shuffle');
+    const url = options.get('url')?.value as string;
+    const shouldShuffle = options.get('shuffle')?.value as boolean;
     if (!url || isVideo(url) === isPlaylist(url)) {
       interaction.reply({
         content: 'Invalid url',
@@ -23,8 +23,9 @@ const commands: Commands = {
       return;
     }
 
+    // const { member  } = interaction;
     const { member } = interaction;
-    const voice: VoiceChannel | null = await member.voice.channel;
+    const voice: VoiceChannel | null = (member as GuildMember).voice?.channel as VoiceChannel;
     if (!voice) return;
 
     if (!client.connection) {
@@ -39,7 +40,7 @@ const commands: Commands = {
     if (!playing) return;
 
     interaction.editReply({
-      content: `<@${member.id}> - ${response} ${playing.title}`,
+      content: `<@${member?.user.id}> - ${response} ${playing.title}`,
     });
   },
   async whatplaying(client, interaction) {

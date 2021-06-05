@@ -1,3 +1,4 @@
+import { Snowflake } from 'discord.js';
 import Client from './client';
 import commands from './commands';
 import env from './env';
@@ -7,7 +8,7 @@ const client = new Client();
 
 client.once('ready', async () => {
   await client.guilds.fetch();
-  const guild = client.guilds.cache.get(env.GUILD);
+  const guild = client.guilds.cache.get(env.GUILD as Snowflake);
   if (!guild) throw new Error(`Couldn't find a guild with id of ${env.GUILD}`);
   console.log('✨');
   setupCommands(guild);
