@@ -59,7 +59,7 @@ export function shuffle<T>(arr: T[]) {
   return array;
 }
 
-export function bestThumbnail(thumbnails: ytdl.thumbnail[]) {
+export function bestThumbnail(thumbnails: ytdl.thumbnail[] | ytpl.Image[]) {
   return thumbnails.sort((a, b) => b.width - a.width)[0];
 }
 
@@ -73,6 +73,6 @@ export function replyNotPlayingErr(interaction: CommandInteraction) {
 export function statusEmebed(status: ResponseStatus, entry: Audio | Audio[]) {
   const title = `${status} ${Array.isArray(entry) ? `${entry.length} tracks` : entry.title}`;
   const embed = new MessageEmbed().setTitle(title);
-  if (!Array.isArray(entry)) embed.setURL(entry.url);
+  if (!Array.isArray(entry)) embed.setURL(entry.url).setImage(entry.thumbnail || '');
   return embed;
 }

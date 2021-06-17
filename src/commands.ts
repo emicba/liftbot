@@ -1,13 +1,7 @@
 import { CommandInteraction, GuildMember, MessageEmbed, VoiceChannel } from 'discord.js';
-import ytdl from 'ytdl-core';
+
 import Client from './client';
-import {
-  bestThumbnail,
-  isPlaylist,
-  isVideo,
-  replyNotPlayingErr,
-  statusEmebed as statusEmbed,
-} from './helpers';
+import { isPlaylist, isVideo, replyNotPlayingErr, statusEmebed as statusEmbed } from './helpers';
 
 // eslint-disable-next-line no-unused-vars
 type Command = (client: Client, command: CommandInteraction) => void;
@@ -29,7 +23,6 @@ const commands: Commands = {
       return;
     }
 
-    // const { member  } = interaction;
     const { member } = interaction;
     const voice: VoiceChannel | null = (member as GuildMember).voice?.channel as VoiceChannel;
     if (!voice) return;
@@ -38,7 +31,7 @@ const commands: Commands = {
       await client.join(voice);
     }
 
-    interaction.defer();
+    interaction.defer({ ephemeral: true });
 
     const { status, entry } = await client.play(url, shouldShuffle);
 
@@ -52,12 +45,15 @@ const commands: Commands = {
   async whatplaying(client, interaction) {
     const { playing } = client;
     if (!playing) return replyNotPlayingErr(interaction);
-    const { title, url } = playing;
+    const { title, url, thumbnail } = playing;
     interaction.defer();
-    const { videoDetails } = await ytdl.getBasicInfo(url);
-    const thumbnail = bestThumbnail(videoDetails.thumbnails);
     return interaction.editReply({
-      embeds: [new MessageEmbed().setTitle(title).setImage(thumbnail.url)],
+      embeds: [
+        new MessageEmbed()
+          .setTitle(title)
+          .setURL(url)
+          .setImage(thumbnail || ''),
+      ],
     });
   },
   async skip(client, interaction) {

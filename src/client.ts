@@ -7,11 +7,12 @@ import {
 } from 'discord.js';
 import ytpl from 'ytpl';
 import ytdl from 'ytdl-core-discord';
-import { isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
+import { bestThumbnail, isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
 
 export type Audio = {
   title: string;
   url: string;
+  thumbnail?: string | null;
 };
 
 export enum ResponseStatus {
@@ -72,6 +73,7 @@ class Client extends DiscordClient {
       const queued: Audio = {
         title: videoDetails.title,
         url: videoDetails.video_url,
+        thumbnail: bestThumbnail(videoDetails.thumbnails).url,
       };
       this.queue.push(queued);
       if (this.playing) return { status: ResponseStatus.Queued, entry: queued };
@@ -82,6 +84,7 @@ class Client extends DiscordClient {
       let queued: Audio[] = items.map((track) => ({
         title: track.title,
         url: track.url,
+        thumbnail: bestThumbnail(track.thumbnails).url,
       }));
       if (shouldShuffle) queued = shuffle(queued);
       this.queue = this.queue.concat(queued);
