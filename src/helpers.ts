@@ -13,8 +13,8 @@ export async function setupCommands(guild: Guild) {
       description: 'Play audio from Youtube',
       options: [
         {
-          name: 'url',
-          description: 'video url',
+          name: 'query',
+          description: 'video title or url',
           type: 'STRING',
           required: true,
         },

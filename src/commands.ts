@@ -2,8 +2,8 @@ import { CommandInteraction, GuildMember, MessageEmbed, VoiceChannel } from 'dis
 
 import Client from './client';
 import { isPlaylist, isVideo, replyNotPlayingErr, statusEmebed as statusEmbed } from './helpers';
+import ytsearch from './ytsearch';
 
-// eslint-disable-next-line no-unused-vars
 type Command = (client: Client, command: CommandInteraction) => void;
 
 type Commands = {
@@ -13,11 +13,12 @@ type Commands = {
 const commands: Commands = {
   async play(client, interaction) {
     const { options } = interaction;
-    const url = options.get('url')?.value as string;
+    const query = options.get('query')?.value as string;
     const shouldShuffle = options.get('shuffle')?.value as boolean;
-    if (!url || isVideo(url) === isPlaylist(url)) {
+    const url = isVideo(query) || isPlaylist(query) ? query : await ytsearch(query);
+    if (!url) {
       interaction.reply({
-        content: 'Invalid url',
+        content: 'Invalid query',
         ephemeral: true,
       });
       return;
