@@ -1,5 +1,6 @@
 import {
   Client as DiscordClient,
+  Collection,
   Intents,
   StreamDispatcher,
   VoiceChannel,
@@ -8,6 +9,7 @@ import {
 import ytpl from 'ytpl';
 import ytdl from 'ytdl-core-discord';
 import { bestThumbnail, isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
+import { commands, Command } from './commands';
 
 export type Audio = {
   title: string;
@@ -47,7 +49,10 @@ class Client extends DiscordClient {
       ],
     });
     this.queue = [];
+    this.commands = new Collection(Object.entries(commands));
   }
+
+  commands: Collection<string, Command>;
 
   playing?: Audio | null;
 

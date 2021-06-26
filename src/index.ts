@@ -1,6 +1,5 @@
 import { Snowflake } from 'discord.js';
 import Client from './client';
-import commands from './commands';
 import env from './env';
 import { setupCommands } from './helpers';
 
@@ -17,7 +16,8 @@ client.once('ready', async () => {
 client.on('interaction', async (interaction) => {
   if (!interaction.isCommand()) return;
   const { commandName } = interaction;
-  if (commandName && commands[commandName]) commands[commandName](client, interaction);
+  if (!client.commands.has(commandName)) return;
+  client.commands.get(commandName)?.execute(client, interaction);
 });
 
 client.login(env.TOKEN);
