@@ -1,13 +1,18 @@
-import {
-  Client as DiscordClient,
-  Collection,
-  Intents,
-  StreamDispatcher,
-  VoiceChannel,
-  VoiceConnection,
-} from 'discord.js';
+import { Client as DiscordClient, Collection, Intents, VoiceChannel } from 'discord.js';
 import ytpl from 'ytpl';
 import ytdl from 'ytdl-core-discord';
+import {
+  joinVoiceChannel,
+  VoiceConnection,
+  createAudioPlayer,
+  AudioPlayer,
+  VoiceConnectionStatus,
+  NoSubscriberBehavior,
+  entersState,
+  createAudioResource,
+  AudioPlayerStatus,
+  StreamType,
+} from '@discordjs/voice';
 import { bestThumbnail, isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
 import { commands, Command } from './commands';
 
@@ -60,13 +65,18 @@ class Client extends DiscordClient {
 
   connection?: VoiceConnection | null;
 
-  dispatcher?: StreamDispatcher;
+  _player?: AudioPlayer | null;
 
   async join(channel: VoiceChannel) {
-    this.connection = await channel.join();
-    this.connection.on('disconnect', () => {
+    this.connection = joinVoiceChannel({
+      channelId: channel.id,
+      guildId: channel.guild.id,
+      adapterCreator: channel.guild.voiceAdapterCreator,
+    });
+    this.connection.on(VoiceConnectionStatus.Disconnected, () => {
       this.playing = null;
       this.connection = null;
+      this._player = null;
       this.queue = [];
     });
   }
@@ -104,20 +114,43 @@ class Client extends DiscordClient {
       this.playing = null;
       return { status: ResponseStatus.Failed };
     }
+
+    try {
+      await entersState(this.connection, VoiceConnectionStatus.Ready, 3e3);
+    } catch (error) {
+      console.warn(error);
+      return { status: ResponseStatus.Failed };
+    }
+
     this.playing = this.queue.shift()!;
-    this.dispatcher = this.connection
-      .play(await ytdl(this.playing.url, ytdlOptions), {
-        type: 'opus',
-        volume: 0.5,
-      })
-      .on('finish', () => {
-        this.playQueue();
-      });
+    const resource = createAudioResource(await ytdl(this.playing.url, ytdlOptions), {
+      inputType: StreamType.Opus,
+    });
+    this.getAudioPlayer().play(resource);
     return { status: ResponseStatus.Played, entry: this.playing };
   }
 
   async playNext() {
-    this.dispatcher?.end();
+    this._player?.stop();
+  }
+
+  getAudioPlayer(): AudioPlayer {
+    if (!this.connection) throw new Error('An active connection must exist to play a song');
+    if (!this._player) {
+      const player = createAudioPlayer({
+        behaviors: {
+          noSubscriber: NoSubscriberBehavior.Pause,
+        },
+      });
+      this.connection.subscribe(player);
+      player.on('stateChange', (oldState, newState) => {
+        if (newState.status === AudioPlayerStatus.Idle && oldState.status !== newState.status) {
+          this.playQueue();
+        }
+      });
+      this._player = player;
+    }
+    return this._player;
   }
 }
 

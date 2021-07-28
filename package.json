@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.5.5",
     "bufferutil": "^4.0.3",
     "discord.js": "github:discordjs/discord.js",
     "dotenv": "^10.0.0",
