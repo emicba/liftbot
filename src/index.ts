@@ -13,7 +13,7 @@ client.once('ready', async () => {
   setupCommands(guild);
 });
 
-client.on('interaction', async (interaction) => {
+client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
   const { commandName } = interaction;
   if (!client.commands.has(commandName)) return;
