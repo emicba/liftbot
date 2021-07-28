@@ -76,8 +76,7 @@ export const commands: { [key: string]: Command } = {
       const { playing } = client;
       if (!playing) return replyNotPlayingErr(interaction);
       const { title, url, thumbnail } = playing;
-      interaction.defer();
-      return interaction.editReply({
+      return interaction.reply({
         embeds: [
           new MessageEmbed()
             .setTitle(title)
