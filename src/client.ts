@@ -73,7 +73,7 @@ class Client extends DiscordClient {
       guildId: channel.guild.id,
       adapterCreator: channel.guild.voiceAdapterCreator,
     });
-    this.connection.on(VoiceConnectionStatus.Disconnected, () => {
+    this.connection.on(VoiceConnectionStatus.Destroyed, () => {
       this.playing = null;
       this.connection = null;
       this._player = null;
@@ -112,6 +112,7 @@ class Client extends DiscordClient {
   async playQueue(): Promise<PlayResponse> {
     if (!this.connection || !this.queue.length) {
       this.playing = null;
+      this._player?.stop();
       return { status: ResponseStatus.Failed };
     }
 
@@ -142,12 +143,12 @@ class Client extends DiscordClient {
           noSubscriber: NoSubscriberBehavior.Pause,
         },
       });
-      this.connection.subscribe(player);
       player.on('stateChange', (oldState, newState) => {
         if (newState.status === AudioPlayerStatus.Idle && oldState.status !== newState.status) {
           this.playQueue();
         }
       });
+      this.connection.subscribe(player);
       this._player = player;
     }
     return this._player;
