@@ -55,7 +55,7 @@ export const commands: { [key: string]: Command } = {
         await client.join(voice);
       }
 
-      interaction.defer({ ephemeral: true });
+      interaction.deferReply({ ephemeral: true });
 
       const { status, entry } = await client.play(url, shouldShuffle);
 
