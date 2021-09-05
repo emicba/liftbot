@@ -2,7 +2,8 @@ import { ApplicationCommandData, CommandInteraction, Guild, MessageEmbed } from 
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import env from './env';
-import { Audio, ResponseStatus } from './client';
+import { ResponseStatus } from './client';
+import Track from './Track';
 
 export async function setupCommands(guild: Guild) {
   await guild.commands.fetch();
@@ -44,10 +45,11 @@ export async function setupCommands(guild: Guild) {
 export const isVideo = ytdl.validateURL;
 export const isPlaylist = ytpl.validateID;
 
-export const ytdlOptions: ytdl.downloadOptions = {
-  filter: 'audioonly',
-  quality: 'highestaudio',
-  highWaterMark: 1024 * 1024 * 8,
+export const ytdlFlags = {
+  o: '-',
+  q: '',
+  f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
+  r: '100K',
 };
 
 export function shuffle<T>(arr: T[]) {
@@ -70,7 +72,7 @@ export function replyNotPlayingErr(interaction: CommandInteraction) {
   });
 }
 
-export function statusEmebed(status: ResponseStatus, entry: Audio | Audio[]) {
+export function statusEmebed(status: ResponseStatus, entry: Track | Track[]) {
   const title = `${status} ${Array.isArray(entry) ? `${entry.length} tracks` : entry.title}`;
   const embed = new MessageEmbed().setTitle(title);
   if (!Array.isArray(entry)) embed.setURL(entry.url).setImage(entry.thumbnail || '');

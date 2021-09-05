@@ -1,6 +1,5 @@
 import { Client as DiscordClient, Collection, Intents, VoiceChannel } from 'discord.js';
 import ytpl from 'ytpl';
-import ytdl from 'ytdl-core-discord';
 import {
   joinVoiceChannel,
   VoiceConnection,
@@ -9,18 +8,11 @@ import {
   VoiceConnectionStatus,
   NoSubscriberBehavior,
   entersState,
-  createAudioResource,
   AudioPlayerStatus,
-  StreamType,
 } from '@discordjs/voice';
-import { bestThumbnail, isPlaylist, isVideo, shuffle, ytdlOptions } from './helpers';
+import { isPlaylist, isVideo, shuffle } from './helpers';
 import { commands, Command } from './commands';
-
-export type Audio = {
-  title: string;
-  url: string;
-  thumbnail?: string | null;
-};
+import Track from './Track';
 
 export enum ResponseStatus {
   Played = 'Playing',
@@ -30,12 +22,12 @@ export enum ResponseStatus {
 
 interface PlayedResponse {
   status: ResponseStatus.Played;
-  entry: Audio;
+  entry: Track;
 }
 
 interface QueuedResponse {
   status: ResponseStatus.Queued;
-  entry: Audio | Audio[];
+  entry: Track | Track[];
 }
 
 interface FailedResponse {
@@ -59,9 +51,9 @@ class Client extends DiscordClient {
 
   commands: Collection<string, Command>;
 
-  playing?: Audio | null;
+  playing?: Track | null;
 
-  queue: Audio[];
+  queue: Track[];
 
   connection?: VoiceConnection | null;
 
@@ -84,23 +76,14 @@ class Client extends DiscordClient {
   async play(url: string, shouldShuffle?: boolean) {
     if (!this.connection) throw new Error('An active connection must exist to play a song');
     if (isVideo(url)) {
-      const { videoDetails } = await ytdl.getBasicInfo(url);
-      const queued: Audio = {
-        title: videoDetails.title,
-        url: videoDetails.video_url,
-        thumbnail: bestThumbnail(videoDetails.thumbnails).url,
-      };
+      const queued = await Track.fromUrl(url);
       this.queue.push(queued);
       if (this.playing) return { status: ResponseStatus.Queued, entry: queued };
       return this.playQueue();
     }
     if (isPlaylist(url)) {
       const { items } = await ytpl(url, { pages: 1 });
-      let queued: Audio[] = items.map((track) => ({
-        title: track.title,
-        url: track.url,
-        thumbnail: bestThumbnail(track.thumbnails).url,
-      }));
+      let queued = await Track.fromPlaylist(items);
       if (shouldShuffle) queued = shuffle(queued);
       this.queue = this.queue.concat(queued);
       if (!this.playing) this.playQueue();
@@ -124,9 +107,7 @@ class Client extends DiscordClient {
     }
 
     this.playing = this.queue.shift()!;
-    const resource = createAudioResource(await ytdl(this.playing.url, ytdlOptions), {
-      inputType: StreamType.Opus,
-    });
+    const resource = await this.playing.createAudioResouce();
     this.getAudioPlayer().play(resource);
     return { status: ResponseStatus.Played, entry: this.playing };
   }
