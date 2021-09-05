@@ -26,5 +26,6 @@ module.exports = {
         ImportDeclaration: { multiline: true },
       },
     ],
+    'operator-linebreak': ['error', 'after'],
   },
 };
