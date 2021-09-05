@@ -19,6 +19,9 @@ FROM node:16.6.1-alpine AS app
 
 ENV NODE_ENV=production
 
+RUN apk add --no-cache python3 && \
+    ln -s /usr/bin/python3 /usr/bin/python
+
 USER node
 
 WORKDIR /app
