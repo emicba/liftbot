@@ -2,7 +2,7 @@ import { ApplicationCommandData, CommandInteraction, Guild, MessageEmbed } from 
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import env from './env';
-import { ResponseStatus } from './client';
+import { ResponseStatus } from './Subscription';
 import Track from './Track';
 
 export async function setupCommands(guild: Guild) {

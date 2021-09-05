@@ -1,13 +1,17 @@
-import {
-  ApplicationCommandData,
-  CommandInteraction,
-  GuildMember,
-  MessageEmbed,
-  VoiceChannel,
-} from 'discord.js';
+import { entersState, joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
+import { ApplicationCommandData, CommandInteraction, GuildMember, MessageEmbed } from 'discord.js';
+import ytpl from 'ytpl';
 
-import Client from './client';
-import { isPlaylist, isVideo, replyNotPlayingErr, statusEmebed as statusEmbed } from './helpers';
+import Client from './Client';
+import {
+  isPlaylist,
+  isVideo,
+  replyNotPlayingErr,
+  shuffle,
+  statusEmebed as statusEmbed,
+} from './helpers';
+import Subscription from './Subscription';
+import Track from './Track';
 import ytsearch from './ytsearch';
 
 export type Command = {
@@ -35,36 +39,74 @@ export const commands: { [key: string]: Command } = {
       ],
     },
     async execute(client, interaction) {
-      const { options } = interaction;
+      const { options, guildId } = interaction;
+      if (!guildId) return;
       const query = options.get('query')?.value as string;
       const shouldShuffle = options.get('shuffle')?.value as boolean;
-      const url = isVideo(query) || isPlaylist(query) ? query : await ytsearch(query);
-      if (!url) {
-        interaction.reply({
-          content: 'Invalid query',
-          ephemeral: true,
-        });
+
+      await interaction.deferReply({ ephemeral: true });
+
+      let subscription = client.subscriptions.get(guildId);
+
+      if (
+        !subscription ||
+        subscription.voiceConnection.state.status === VoiceConnectionStatus.Destroyed
+      ) {
+        if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
+          const voiceChannel = interaction.member.voice.channel;
+          subscription = new Subscription(
+            joinVoiceChannel({
+              channelId: voiceChannel.id,
+              guildId: voiceChannel.guild.id,
+              adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+            }),
+          );
+          subscription.voiceConnection.on('error', console.warn);
+          client.subscriptions.set(guildId, subscription);
+        }
+      }
+
+      if (!subscription) {
+        await interaction.followUp('You need to be in a voice channel');
         return;
       }
 
-      const { member } = interaction;
-      const voice: VoiceChannel | null = (member as GuildMember).voice?.channel as VoiceChannel;
-      if (!voice) return;
-
-      if (!client.connection) {
-        await client.join(voice);
+      try {
+        await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 15e3);
+      } catch (err) {
+        console.warn(err);
+        await interaction.followUp('Something went wrong while trying to join voice channel');
+        return;
       }
 
-      interaction.deferReply({ ephemeral: true });
-
-      const { status, entry } = await client.play(url, shouldShuffle);
-
-      const { playing } = client;
-      if (!playing || !entry) return;
-
-      interaction.editReply({
-        embeds: [statusEmbed(status, entry)],
-      });
+      try {
+        if (isPlaylist(query)) {
+          const { items } = await ytpl(query, { pages: 1 });
+          let tracks = await Track.fromPlaylist(items);
+          if (shouldShuffle) {
+            tracks = shuffle(tracks);
+          }
+          const response = await subscription.enqueue(tracks);
+          interaction.followUp({
+            embeds: [statusEmbed(response, tracks)],
+          });
+          return;
+        }
+        const url = isVideo(query) ? query : await ytsearch(query);
+        if (!url) {
+          interaction.followUp('Invalid query');
+          return;
+        }
+        const track = await Track.fromUrl(url);
+        const response = await subscription.enqueue(track);
+        interaction.followUp({
+          embeds: [statusEmbed(response, track)],
+        });
+        return;
+      } catch (err) {
+        console.warn(err);
+        await interaction.followUp('Something went wrong while trying to play audio');
+      }
     },
   },
   whatplaying: {
@@ -73,10 +115,17 @@ export const commands: { [key: string]: Command } = {
       description: 'Describes the playing song',
     },
     async execute(client, interaction) {
-      const { playing } = client;
-      if (!playing) return replyNotPlayingErr(interaction);
-      const { title, url, thumbnail } = playing;
-      return interaction.reply({
+      if (!interaction.guildId) return;
+      const subscription = client.subscriptions.get(interaction.guildId);
+
+      if (!subscription || !subscription.nowPlaying) {
+        await replyNotPlayingErr(interaction);
+        return;
+      }
+
+      const { title, url, thumbnail } = subscription.nowPlaying;
+
+      interaction.reply({
         embeds: [
           new MessageEmbed()
             .setTitle(title)
@@ -92,9 +141,16 @@ export const commands: { [key: string]: Command } = {
       description: 'Skips to the next song',
     },
     async execute(client, interaction) {
-      if (!client.playing) return replyNotPlayingErr(interaction);
-      client.playNext();
-      return interaction.reply({
+      if (!interaction.guildId) return;
+      const subscription = client.subscriptions.get(interaction.guildId);
+
+      if (!subscription || !subscription.nowPlaying) {
+        await replyNotPlayingErr(interaction);
+        return;
+      }
+
+      subscription.audioPlayer.stop();
+      interaction.reply({
         content: 'Skipped to the next song',
       });
     },

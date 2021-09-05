@@ -1,5 +1,5 @@
 import { Snowflake } from 'discord.js';
-import Client from './client';
+import Client from './Client';
 import env from './env';
 import { setupCommands } from './helpers';
 
