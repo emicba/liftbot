@@ -2,7 +2,7 @@ import { VoiceConnectionStatus, joinVoiceChannel, entersState } from '@discordjs
 import { GuildMember } from 'discord.js';
 import ytpl from 'ytpl';
 import { Command } from '..';
-import { isPlaylist, shuffle, isVideo, statusEmebed } from '../helpers';
+import { isPlaylist, shuffle, isVideo, buildStatusEmbed } from '../helpers';
 import Subscription from '../Subscription';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
@@ -73,7 +73,7 @@ export default {
         }
         const response = await subscription.enqueue(tracks);
         interaction.followUp({
-          embeds: [statusEmebed(response, tracks)],
+          embeds: [buildStatusEmbed(response, tracks)],
         });
         return;
       }
@@ -85,7 +85,7 @@ export default {
       const track = await Track.fromUrl(url);
       const response = await subscription.enqueue(track);
       interaction.followUp({
-        embeds: [statusEmebed(response, track)],
+        embeds: [buildStatusEmbed(response, track)],
       });
       return;
     } catch (err) {

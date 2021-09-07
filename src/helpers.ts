@@ -34,7 +34,7 @@ export function replyNotPlayingErr(interaction: CommandInteraction) {
   });
 }
 
-export function statusEmebed(status: ResponseStatus, entry: Track | Track[]) {
+export function buildStatusEmbed(status: ResponseStatus, entry: Track | Track[]) {
   const title = `${status} ${Array.isArray(entry) ? `${entry.length} tracks` : entry.title}`;
   const embed = new MessageEmbed().setTitle(title);
   if (!Array.isArray(entry)) embed.setURL(entry.url).setImage(entry.thumbnail || '');
