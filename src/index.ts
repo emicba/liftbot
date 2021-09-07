@@ -27,4 +27,12 @@ client.on('interactionCreate', async (interaction) => {
   client.commands.get(commandName)?.execute(client, interaction);
 });
 
+client.on('messageCreate', async (message) => {
+  if (!message.guild || message.author.id !== message.guild.ownerId) return;
+  if (message.content === '!setup') {
+    await message.guild.commands.set(client.commands.toJSON() as any);
+    await message.reply(`Successfully added ${client.commands.size} commands :^)`);
+  }
+});
+
 client.login(env.TOKEN);
