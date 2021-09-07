@@ -1,5 +1,5 @@
 import { Client as DiscordClient, Collection, Intents, Snowflake } from 'discord.js';
-import { commands, Command } from './commands';
+import { Command } from '.';
 import Subscription from './Subscription';
 
 class Client extends DiscordClient {
@@ -15,7 +15,7 @@ class Client extends DiscordClient {
         Intents.FLAGS.GUILD_VOICE_STATES,
       ],
     });
-    this.commands = new Collection(Object.entries(commands));
+    this.commands = new Collection();
     this.subscriptions = new Collection();
   }
 }
