@@ -6,14 +6,18 @@ import env from './env';
 const client = new Client();
 
 export interface Command extends ChatInputApplicationCommandData {
+  aliases?: string[];
   execute: (client: Client, interaction: CommandInteraction) => void;
 }
 
 const commandFiles = fs.readdirSync(`${__dirname}/commands`);
 
 commandFiles.forEach(async (file) => {
-  const command = (await import(`${__dirname}/commands/${file}`)).default;
+  const command: Command = (await import(`${__dirname}/commands/${file}`)).default;
   client.commands.set(command.name, command);
+  if (command.aliases) {
+    command.aliases.forEach((alias) => client.commands.set(alias, { ...command, name: alias }));
+  }
 });
 
 client.once('ready', async () => {

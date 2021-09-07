@@ -5,6 +5,7 @@ import { replyNotPlayingErr } from '../helpers';
 export default {
   name: 'whatplaying',
   description: 'Describes the playing song',
+  aliases: ['nowplaying'],
   async execute(client, interaction) {
     if (!interaction.guildId) return;
     const subscription = client.subscriptions.get(interaction.guildId);
