@@ -96,7 +96,7 @@ export default class Track implements TrackMeta {
     return items.map((item) => {
       const track = new Track({
         title: item.title,
-        url: item.url,
+        url: item.shortUrl,
         thumbnail: bestThumbnail(item.thumbnails).url as string,
       });
       return track;
