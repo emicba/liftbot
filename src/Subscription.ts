@@ -22,13 +22,10 @@ export default class Subscription {
 
   public queue: Track[];
 
-  public nowPlaying: Track | null;
-
   public constructor(voiceConnection: VoiceConnection) {
     this.voiceConnection = voiceConnection;
     this.audioPlayer = createAudioPlayer();
     this.queue = [];
-    this.nowPlaying = null;
 
     this.voiceConnection.on('stateChange', async (_, state) => {
       if (state.status === VoiceConnectionStatus.Disconnected) {
@@ -55,7 +52,6 @@ export default class Subscription {
         oldState.status !== AudioPlayerStatus.Idle
       ) {
         (oldState.resource as AudioResource<Track>).metadata.onFinish();
-        this.nowPlaying = null;
         this.playQueue();
       } else if (newState.status === AudioPlayerStatus.Playing) {
         (newState.resource as AudioResource<Track>).metadata.onStart();
@@ -81,7 +77,6 @@ export default class Subscription {
 
   public stop() {
     this.queue = [];
-    this.nowPlaying = null;
     this.audioPlayer.stop(true);
   }
 
@@ -90,16 +85,21 @@ export default class Subscription {
       return ResponseStatus.Queued;
     }
 
-    this.nowPlaying = this.queue.shift()!;
+    const nextTrack = this.queue.shift()!;
     try {
-      const resource = await this.nowPlaying.createAudioResouce();
+      const resource = await nextTrack.createAudioResouce();
       this.audioPlayer.play(resource);
       return ResponseStatus.Played;
     } catch (err) {
       console.warn(err);
-      this.nowPlaying.onError(err as Error);
+      nextTrack.onError(err as Error);
       this.playQueue();
       return ResponseStatus.Failed;
     }
+  }
+
+  get nowPlaying(): Track | null {
+    if (this.audioPlayer.state.status === AudioPlayerStatus.Idle) return null;
+    return (this.audioPlayer.state.resource as AudioResource<Track>).metadata;
   }
 }
