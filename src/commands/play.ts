@@ -1,9 +1,6 @@
-import { VoiceConnectionStatus, joinVoiceChannel, entersState } from '@discordjs/voice';
-import { GuildMember } from 'discord.js';
 import ytpl from 'ytpl';
 import { Command } from '..';
 import { isPlaylist, shuffle, isVideo, buildStatusEmbed } from '../helpers';
-import Subscription from '../Subscription';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
 
@@ -24,43 +21,18 @@ export default {
     },
   ],
   async execute(client, interaction) {
-    const { options, guildId } = interaction;
+    const { options, guildId, member } = interaction;
     if (!guildId) return;
     const query = options.get('query')?.value as string;
     const shouldShuffle = options.get('shuffle')?.value as boolean;
 
     await interaction.deferReply({ ephemeral: true });
 
-    let subscription = client.subscriptions.get(guildId);
-
-    if (
-      !subscription ||
-      subscription.voiceConnection.state.status === VoiceConnectionStatus.Destroyed
-    ) {
-      if (interaction.member instanceof GuildMember && interaction.member.voice.channel) {
-        const voiceChannel = interaction.member.voice.channel;
-        subscription = new Subscription(
-          joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: voiceChannel.guild.id,
-            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-          }),
-        );
-        subscription.voiceConnection.on('error', console.warn);
-        client.subscriptions.set(guildId, subscription);
-      }
-    }
-
-    if (!subscription) {
-      await interaction.followUp('You need to be in a voice channel');
-      return;
-    }
-
+    let subscription;
     try {
-      await entersState(subscription.voiceConnection, VoiceConnectionStatus.Ready, 15e3);
+      subscription = await client.getOrCreateSubscription(guildId, member);
     } catch (err) {
-      console.warn(err);
-      await interaction.followUp('Something went wrong while trying to join voice channel');
+      interaction.followUp((err as Error).message);
       return;
     }
 
