@@ -1,4 +1,8 @@
-import type { ChatInputApplicationCommandData, CommandInteraction } from 'discord.js';
+import type {
+  ChatInputApplicationCommandData,
+  CommandInteraction,
+  SelectMenuInteraction,
+} from 'discord.js';
 import fs from 'fs';
 import Client from './Client';
 import env from './env';
@@ -8,6 +12,7 @@ const client = new Client();
 export interface Command extends ChatInputApplicationCommandData {
   aliases?: string[];
   execute: (client: Client, interaction: CommandInteraction) => void;
+  selectMenu?: (client: Client, interaction: SelectMenuInteraction) => void;
 }
 
 const commandFiles = fs.readdirSync(`${__dirname}/commands`);
@@ -25,10 +30,15 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isCommand()) return;
-  const { commandName } = interaction;
-  if (!client.commands.has(commandName)) return;
-  client.commands.get(commandName)?.execute(client, interaction);
+  if (interaction.isCommand()) {
+    const { commandName } = interaction;
+    client.commands.get(commandName)?.execute(client, interaction);
+    return;
+  }
+  if (interaction.isSelectMenu()) {
+    const { customId } = interaction;
+    client.commands.get(customId)?.selectMenu?.(client, interaction);
+  }
 });
 
 client.on('messageCreate', async (message) => {

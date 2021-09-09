@@ -35,8 +35,9 @@ export function replyNotPlayingErr(interaction: CommandInteraction) {
 }
 
 export function buildStatusEmbed(status: ResponseStatus, entry: Track | Track[]) {
-  const title = `${status} ${Array.isArray(entry) ? `${entry.length} tracks` : entry.title}`;
+  const _entry = Array.isArray(entry) && entry.length === 1 ? entry[0] : entry;
+  const title = `${status} ${Array.isArray(_entry) ? `${_entry.length} tracks` : _entry.title}`;
   const embed = new MessageEmbed().setTitle(title);
-  if (!Array.isArray(entry)) embed.setURL(entry.url).setImage(entry.thumbnail || '');
+  if (!Array.isArray(_entry)) embed.setURL(_entry.url).setImage(_entry.thumbnail || '');
   return embed;
 }
