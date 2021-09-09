@@ -27,5 +27,7 @@ module.exports = {
       },
     ],
     'operator-linebreak': ['error', 'after'],
+    'no-redeclare': 'off',
+    '@typescript-eslint/no-redeclare': ['error'],
   },
 };

@@ -1,4 +1,3 @@
-/* eslint-disable no-redeclare */
 import fetch from 'node-fetch';
 
 async function ytsearch(query: string, limit?: 1): Promise<string>;
