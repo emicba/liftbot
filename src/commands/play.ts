@@ -23,8 +23,8 @@ export default {
   async execute(client, interaction) {
     const { options, guildId, member } = interaction;
     if (!guildId) return;
-    const query = options.get('query')?.value as string;
-    const shouldShuffle = options.get('shuffle')?.value as boolean;
+    const query = options.getString('query', true);
+    const shouldShuffle = options.get('shuffle', false);
 
     await interaction.deferReply({ ephemeral: true });
 

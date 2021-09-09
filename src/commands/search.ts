@@ -19,8 +19,8 @@ export default {
   ],
   async execute(client, interaction) {
     const { options, guildId } = interaction;
-    const query = options.get('query')?.value as string;
-    if (!guildId || !query) return;
+    const query = options.getString('query', true);
+    if (!guildId) return;
 
     await interaction.deferReply({ ephemeral: true });
     await interaction.followUp('🔎 Searching...');
