@@ -21,7 +21,7 @@ export default {
     const tracksText = tracks
       .map((track, index) => `\`${index + 1}.\` [${track.title}](${track.url})\n`)
       .join('\n');
-    const embed = new MessageEmbed().setTitle('Queue').setDescription(`
+    const embed = new MessageEmbed().setColor('RANDOM').setTitle('Queue').setDescription(`
         __Now Playling__
         [${nowPlaying.title}](${nowPlaying.url})
 

@@ -20,6 +20,7 @@ export default {
     interaction.reply({
       embeds: [
         new MessageEmbed()
+          .setColor('RANDOM')
           .setTitle(title)
           .setURL(url)
           .setImage(thumbnail || ''),
