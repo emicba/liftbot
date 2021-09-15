@@ -5,6 +5,7 @@ import { ResponseStatus } from './Subscription';
 import Track from './Track';
 
 export const isVideo = ytdl.validateURL;
+export const getVideoId = ytdl.getVideoID;
 export const isPlaylist = ytpl.validateID;
 
 export const ytdlFlags = {

@@ -1,6 +1,6 @@
 import ytpl from 'ytpl';
 import { Command } from '..';
-import { isPlaylist, shuffle, isVideo, buildStatusEmbed } from '../helpers';
+import { isPlaylist, shuffle, isVideo, buildStatusEmbed, getVideoId } from '../helpers';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
 
@@ -49,7 +49,7 @@ export default {
         });
         return;
       }
-      const url = isVideo(query) ? query : await ytsearch(query);
+      const url = isVideo(query) ? `https://youtu.be/${getVideoId(query)}` : await ytsearch(query);
       if (!url) {
         interaction.followUp('Invalid query');
         return;
