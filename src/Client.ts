@@ -8,12 +8,15 @@ import {
   Snowflake,
 } from 'discord.js';
 import { Command } from '.';
+import Spotify from './Spotify';
 import Subscription from './Subscription';
 
 class Client extends DiscordClient {
   public commands: Collection<string, Command>;
 
   public subscriptions: Collection<Snowflake, Subscription>;
+
+  public spotify: Spotify;
 
   constructor() {
     super({
@@ -25,6 +28,7 @@ class Client extends DiscordClient {
     });
     this.commands = new Collection();
     this.subscriptions = new Collection();
+    this.spotify = new Spotify();
   }
 
   public async getOrCreateSubscription(

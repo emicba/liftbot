@@ -1,6 +1,13 @@
 import ytpl from 'ytpl';
 import { Command } from '..';
-import { isPlaylist, shuffle, isVideo, buildStatusEmbed, getVideoId } from '../helpers';
+import {
+  isPlaylist,
+  shuffle,
+  isVideo,
+  buildStatusEmbed,
+  getVideoId,
+  isSpotifyPlaylist,
+} from '../helpers';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
 
@@ -49,6 +56,17 @@ export default {
         });
         return;
       }
+      if (isSpotifyPlaylist(query)) {
+        let tracks = await client.spotify.getPlaylistTracks(query);
+        if (shouldShuffle) {
+          tracks = shuffle(tracks);
+        }
+        const response = await subscription.enqueue(tracks);
+        interaction.followUp({
+          embeds: [buildStatusEmbed(response, tracks)],
+        });
+        return;
+      }
       const url = isVideo(query) ? `https://youtu.be/${getVideoId(query)}` : await ytsearch(query);
       if (!url) {
         interaction.followUp('Invalid query');
@@ -62,7 +80,9 @@ export default {
       return;
     } catch (err) {
       console.warn(err);
-      await interaction.followUp('Something went wrong while trying to play audio');
+      await interaction.followUp(
+        (err as Error).message || 'Something went wrong while trying to play audio',
+      );
     }
   },
 } as Command;
