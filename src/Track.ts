@@ -28,7 +28,7 @@ export default class Track implements TrackMeta {
 
   public readonly onError: (err: Error) => void;
 
-  private constructor({ title, url, thumbnail, onStart, onFinish, onError }: TrackMeta) {
+  public constructor({ title, url, thumbnail, onStart, onFinish, onError }: TrackMeta) {
     this.title = title;
     this.url = url;
     this.thumbnail = thumbnail;
@@ -97,7 +97,7 @@ export default class Track implements TrackMeta {
       const track = new Track({
         title: item.title,
         url: item.shortUrl,
-        thumbnail: bestThumbnail(item.thumbnails).url as string,
+        thumbnail: item.thumbnails && (bestThumbnail(item.thumbnails).url as string),
       });
       return track;
     });

@@ -7,6 +7,8 @@ import Track from './Track';
 export const isVideo = ytdl.validateURL;
 export const getVideoId = ytdl.getVideoID;
 export const isPlaylist = ytpl.validateID;
+export const SPOTIFY_PLAYLIST_TEST = /^https:\/\/open\.spotify\.com\/playlist\/([a-zA-Z0-9]{22})/;
+export const isSpotifyPlaylist = (query: string) => SPOTIFY_PLAYLIST_TEST.test(query);
 
 export const ytdlFlags = {
   o: '-',
