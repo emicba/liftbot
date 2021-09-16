@@ -2,7 +2,7 @@ import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice
 import { getInfo } from 'ytdl-core';
 import { raw as ytdl } from 'youtube-dl-exec';
 import ytpl from 'ytpl';
-import { bestThumbnail, ytdlFlags } from './helpers';
+import { bestThumbnail, Image, ytdlFlags } from './helpers';
 
 interface TrackMeta {
   title: string;
@@ -74,7 +74,7 @@ export default class Track implements TrackMeta {
     const { videoDetails } = await getInfo(url);
     const { title, thumbnails } = videoDetails;
 
-    const thumbnail = bestThumbnail(thumbnails).url as string;
+    const thumbnail = bestThumbnail(thumbnails).url;
 
     if (!methods) {
       return new Track({
@@ -97,7 +97,7 @@ export default class Track implements TrackMeta {
       const track = new Track({
         title: item.title,
         url: item.shortUrl,
-        thumbnail: item.thumbnails && (bestThumbnail(item.thumbnails).url as string),
+        thumbnail: bestThumbnail(item.thumbnails as Image[]).url,
       });
       return track;
     });

@@ -1,5 +1,5 @@
 import fetch, { Response } from 'node-fetch';
-import { bestThumbnail, SPOTIFY_PLAYLIST_TEST } from './helpers';
+import { bestThumbnail, Image, SPOTIFY_PLAYLIST_TEST } from './helpers';
 import Track from './Track';
 import ytsearch from './ytsearch';
 
@@ -8,12 +8,6 @@ interface ClientCredentialsResponse {
   accessToken: string;
   accessTokenExpirationTimestampMs: number;
   isAnonymous: string;
-}
-
-interface Image {
-  url: string;
-  width: number;
-  height: number;
 }
 
 interface SpotifyTrack {
@@ -92,7 +86,7 @@ class Spotify {
         return new Track({
           title: track.name,
           url,
-          thumbnail: bestThumbnail(track.album.images).url!,
+          thumbnail: bestThumbnail(track.album.images).url,
         });
       }),
     );

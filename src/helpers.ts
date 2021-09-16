@@ -26,8 +26,19 @@ export function shuffle<T>(arr: T[]) {
   return array;
 }
 
-export function bestThumbnail(thumbnails: ytdl.thumbnail[] | ytpl.Image[]) {
-  return thumbnails.sort((a, b) => b.width - a.width)[0];
+export interface Image {
+  url: string;
+  width: number;
+  height: number;
+}
+
+export function bestThumbnail<T extends Image>(thumbnails: T[]) {
+  return thumbnails.reduce((best, current) => {
+    if (current.width > best.width) {
+      return current;
+    }
+    return best;
+  });
 }
 
 export function replyNotPlayingErr(interaction: CommandInteraction) {
