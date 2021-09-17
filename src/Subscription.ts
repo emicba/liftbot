@@ -32,20 +32,22 @@ export default class Subscription {
       if (state.status === VoiceConnectionStatus.Disconnected) {
         if (
           state.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
-          state.closeCode === 4041
+          state.closeCode === 4014
         ) {
           /**
-           * If the WebSocket closed with a 4041 code, do not attempt to reconnect.
+           * If the WebSocket closed with a 4014 code, do not attempt to reconnect.
            * There's a chance the conection will re-establish itself if the disconnection was due
-           * to switching channels. We'll wait 5 seconds before destroying the voice connection.
+           * to switching channels. We'll wait 2 seconds before destroying the voice connection.
            * Read more:
            * https://discord.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes
            */
           try {
-            await entersState(this.voiceConnection, VoiceConnectionStatus.Connecting, 5000);
+            await entersState(this.voiceConnection, VoiceConnectionStatus.Connecting, 2000);
           } catch {
             this.voiceConnection.destroy();
           }
+        } else {
+          this.voiceConnection.destroy();
         }
       } else if (state.status === VoiceConnectionStatus.Destroyed) {
         this.stop();
