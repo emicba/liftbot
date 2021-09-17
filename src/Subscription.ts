@@ -5,6 +5,7 @@ import {
   createAudioPlayer,
   entersState,
   VoiceConnection,
+  VoiceConnectionDisconnectReason,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
 import Track from './Track';
@@ -29,7 +30,23 @@ export default class Subscription {
 
     this.voiceConnection.on('stateChange', async (_, state) => {
       if (state.status === VoiceConnectionStatus.Disconnected) {
-        this.voiceConnection.destroy();
+        if (
+          state.reason === VoiceConnectionDisconnectReason.WebSocketClose &&
+          state.closeCode === 4041
+        ) {
+          /**
+           * If the WebSocket closed with a 4041 code, do not attempt to reconnect.
+           * There's a chance the conection will re-establish itself if the disconnection was due
+           * to switching channels. We'll wait 5 seconds before destroying the voice connection.
+           * Read more:
+           * https://discord.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes
+           */
+          try {
+            await entersState(this.voiceConnection, VoiceConnectionStatus.Connecting, 5000);
+          } catch {
+            this.voiceConnection.destroy();
+          }
+        }
       } else if (state.status === VoiceConnectionStatus.Destroyed) {
         this.stop();
       } else if (
