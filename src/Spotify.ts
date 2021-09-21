@@ -86,6 +86,7 @@ class Spotify {
         return new Track({
           title: track.name,
           url,
+          sourceUrl: track.external_urls.spotify,
           thumbnail: bestThumbnail(track.album.images).url,
         });
       }),

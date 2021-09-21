@@ -19,11 +19,11 @@ export default {
     const diff = queue.length - tracks.length;
 
     const tracksText = tracks
-      .map((track, index) => `\`${index + 1}.\` [${track.title}](${track.url})\n`)
+      .map((track, index) => `\`${index + 1}.\` [${track.title}](${track.link})\n`)
       .join('\n');
     const embed = new MessageEmbed().setColor('RANDOM').setTitle('Queue').setDescription(`
         __Now Playling__
-        [${nowPlaying.title}](${nowPlaying.url})
+        [${nowPlaying.title}](${nowPlaying.link})
 
         ${tracksText}
         ${diff > 0 ? `**+${diff} more songs in queue**` : ''}

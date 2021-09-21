@@ -7,6 +7,7 @@ import { bestThumbnail, Image, ytdlFlags } from './helpers';
 interface TrackMeta {
   title: string;
   url: string;
+  sourceUrl?: string;
   thumbnail?: string;
   onStart?: () => void;
   onFinish?: () => void;
@@ -20,7 +21,9 @@ export default class Track implements TrackMeta {
 
   public readonly url: string;
 
-  public readonly thumbnail: string | undefined;
+  public readonly sourceUrl?: string;
+
+  public readonly thumbnail?: string;
 
   public readonly onStart: () => void;
 
@@ -28,13 +31,18 @@ export default class Track implements TrackMeta {
 
   public readonly onError: (err: Error) => void;
 
-  public constructor({ title, url, thumbnail, onStart, onFinish, onError }: TrackMeta) {
+  public constructor({ title, url, sourceUrl, thumbnail, onStart, onFinish, onError }: TrackMeta) {
     this.title = title;
     this.url = url;
+    this.sourceUrl = sourceUrl;
     this.thumbnail = thumbnail;
     this.onStart = onStart || emptyFn;
     this.onFinish = onFinish || emptyFn;
     this.onError = onError || emptyFn;
+  }
+
+  get link() {
+    return this.sourceUrl ?? this.url;
   }
 
   public createAudioResouce(): Promise<AudioResource<Track>> {

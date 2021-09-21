@@ -15,14 +15,14 @@ export default {
       return;
     }
 
-    const { title, url, thumbnail } = subscription.nowPlaying;
+    const { title, link, thumbnail } = subscription.nowPlaying;
 
     interaction.reply({
       embeds: [
         new MessageEmbed()
           .setColor('RANDOM')
           .setTitle(title)
-          .setURL(url)
+          .setURL(link)
           .setImage(thumbnail || ''),
       ],
     });
