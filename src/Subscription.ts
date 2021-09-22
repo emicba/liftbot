@@ -11,9 +11,10 @@ import {
 import Track from './Track';
 
 export enum ResponseStatus {
-  Played = 'Playing',
-  Queued = 'Queued',
-  Failed = 'Failed',
+  PLAYED = 'Playing',
+  QUEUED = 'Queued',
+  FAILED = 'Failed',
+  PAUSED = 'Paused',
 }
 
 export default class Subscription {
@@ -101,19 +102,19 @@ export default class Subscription {
 
   private async playQueue(): Promise<ResponseStatus> {
     if (this.audioPlayer.state.status !== AudioPlayerStatus.Idle || this.queue.length === 0) {
-      return ResponseStatus.Queued;
+      return ResponseStatus.QUEUED;
     }
 
     const nextTrack = this.queue.shift()!;
     try {
       const resource = await nextTrack.createAudioResouce();
       this.audioPlayer.play(resource);
-      return ResponseStatus.Played;
+      return ResponseStatus.PLAYED;
     } catch (err) {
       console.warn(err);
       nextTrack.onError(err as Error);
       this.playQueue();
-      return ResponseStatus.Failed;
+      return ResponseStatus.FAILED;
     }
   }
 
