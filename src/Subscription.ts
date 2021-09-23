@@ -8,6 +8,7 @@ import {
   VoiceConnectionDisconnectReason,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
+import { TypedEmitter } from 'tiny-typed-emitter';
 import Track from './Track';
 
 export enum ResponseStatus {
@@ -17,7 +18,11 @@ export enum ResponseStatus {
   PAUSED = 'Paused',
 }
 
-export default class Subscription {
+export type SubscriptionEvents = {
+  destroy: () => void;
+};
+
+export default class Subscription extends TypedEmitter<SubscriptionEvents> {
   public readonly voiceConnection: VoiceConnection;
 
   public readonly audioPlayer: AudioPlayer;
@@ -25,6 +30,7 @@ export default class Subscription {
   public queue: Track[];
 
   public constructor(voiceConnection: VoiceConnection) {
+    super();
     this.voiceConnection = voiceConnection;
     this.audioPlayer = createAudioPlayer();
     this.queue = [];
@@ -98,6 +104,10 @@ export default class Subscription {
   public stop() {
     this.queue = [];
     this.audioPlayer.stop(true);
+    if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) {
+      this.voiceConnection.destroy();
+    }
+    this.emit('destroy');
   }
 
   private async playQueue(): Promise<ResponseStatus> {

@@ -53,7 +53,12 @@ class Client extends DiscordClient {
           adapterCreator: voiceChannel.guild.voiceAdapterCreator,
         }),
       );
+
       subscription.voiceConnection.on('error', console.warn);
+      subscription.once('destroy', () => {
+        this.subscriptions.delete(guildId);
+      });
+
       this.subscriptions.set(guildId, subscription);
     }
 
