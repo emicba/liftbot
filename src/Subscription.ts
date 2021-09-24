@@ -29,6 +29,8 @@ export default class Subscription extends TypedEmitter<SubscriptionEvents> {
 
   public queue: Track[];
 
+  public destroyTimeout?: ReturnType<typeof setTimeout>;
+
   public constructor(voiceConnection: VoiceConnection) {
     super();
     this.voiceConnection = voiceConnection;
@@ -72,15 +74,24 @@ export default class Subscription extends TypedEmitter<SubscriptionEvents> {
       }
     });
 
-    this.audioPlayer.on('stateChange', (oldState, newState) => {
+    this.audioPlayer.on('stateChange', async (oldState, newState) => {
       if (
         newState.status === AudioPlayerStatus.Idle &&
         oldState.status !== AudioPlayerStatus.Idle
       ) {
         (oldState.resource as AudioResource<Track>).metadata.onFinish();
-        this.playQueue();
+        await this.playQueue();
+        if (this.audioPlayer.state.status === AudioPlayerStatus.Idle) {
+          this.destroyTimeout = setTimeout(() => {
+            this.stop();
+          }, 1.2e6);
+        }
       } else if (newState.status === AudioPlayerStatus.Playing) {
         (newState.resource as AudioResource<Track>).metadata.onStart();
+        if (this.destroyTimeout !== undefined) {
+          clearTimeout(this.destroyTimeout);
+          this.destroyTimeout = undefined;
+        }
       }
     });
 
@@ -106,6 +117,9 @@ export default class Subscription extends TypedEmitter<SubscriptionEvents> {
     this.audioPlayer.stop(true);
     if (this.voiceConnection.state.status !== VoiceConnectionStatus.Destroyed) {
       this.voiceConnection.destroy();
+    }
+    if (this.destroyTimeout !== undefined) {
+      clearTimeout(this.destroyTimeout);
     }
     this.emit('destroy');
   }
