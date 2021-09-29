@@ -1,37 +1,19 @@
 import fetch, { Response } from 'node-fetch';
-import { bestThumbnail, Image, SPOTIFY_PLAYLIST_TEST } from './helpers';
+import { bestThumbnail } from './helpers';
+import type {
+  ClientCredentialsResponse,
+  AlbumsAPIResponse,
+  PlaylistsAPIResponse,
+} from './types/spotify';
 import Track from './Track';
 import ytsearch from './ytsearch';
 
-interface ClientCredentialsResponse {
-  clientId: string;
-  accessToken: string;
-  accessTokenExpirationTimestampMs: number;
-  isAnonymous: string;
-}
-
-interface SpotifyTrack {
-  track: {
-    name: string;
-    album: {
-      name: string;
-      images: Image[];
-    };
-    // eslint-disable-next-line camelcase
-    external_urls: {
-      spotify: string;
-    };
-    artists: {
-      name: string;
-    }[];
-  };
-}
-
-interface SpotifyPlaylistResponse {
-  items: SpotifyTrack[];
-}
-
+const SPOTIFY_REGEX = /https:\/\/open\.spotify\.com\/(?<type>\w+)\/(?<id>[a-zA-Z0-9]{22})/;
 const BASE_URL = 'https://api.spotify.com/v1';
+
+export function isSpotifyUrl(url: string): boolean {
+  return SPOTIFY_REGEX.test(url);
+}
 
 class Spotify {
   token?: string;
@@ -70,15 +52,30 @@ class Spotify {
     });
   }
 
-  public async getPlaylistTracks(playlistUrl: string): Promise<Track[]> {
-    const match = SPOTIFY_PLAYLIST_TEST.exec(playlistUrl);
-    if (!match || match.length < 2) throw new Error('Invalid playlist URL');
-    const playlistId = match[1];
-    const response = await this.fetch(`/playlists/${playlistId}/tracks`, {
+  public async getAlbumTracks(id: string): Promise<any> {
+    const response = await this.fetch(`/albums/${id}`);
+    if (!response.ok) throw new Error('Could not get album tracks');
+    const data: AlbumsAPIResponse = await response.json();
+    return Promise.all(
+      data.tracks.items.map(async (track) => {
+        const artists = track.artists.map((artist) => artist.name).join(' ');
+        const url = await ytsearch(`${track.name} ${artists}`);
+        return new Track({
+          title: track.name,
+          url,
+          sourceUrl: track.external_urls.spotify,
+          thumbnail: bestThumbnail(data.images).url,
+        });
+      }),
+    );
+  }
+
+  public async getPlaylistTracks(id: string): Promise<Track[]> {
+    const response = await this.fetch(`/playlists/${id}/tracks`, {
       fields: 'items(track(name,external_urls(spotify),artists(name),album(name,images)))',
     });
     if (!response.ok) throw new Error('Could not get playlist tracks');
-    const data: SpotifyPlaylistResponse = await response.json();
+    const data: PlaylistsAPIResponse = await response.json();
     return Promise.all(
       data.items.map(async ({ track }) => {
         const artists = track.artists.map((artist) => artist.name).join(' ');
@@ -91,6 +88,25 @@ class Spotify {
         });
       }),
     );
+  }
+
+  public async resolveUrl(url: string): Promise<Track[]> {
+    const { type, id }: Partial<{ [key: string]: string }> = SPOTIFY_REGEX.exec(url)?.groups ?? {};
+    if (!type || !id || id.length !== 22) {
+      throw new Error('Invalid URL');
+    }
+    switch (type) {
+      case 'album':
+        return this.getAlbumTracks(id);
+      case 'artist':
+        throw new Error('Not implemented');
+      case 'track':
+        throw new Error('Not implemented');
+      case 'playlist':
+        return this.getPlaylistTracks(id);
+      default:
+        throw new Error('Unknown type');
+    }
   }
 }
 

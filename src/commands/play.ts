@@ -1,13 +1,7 @@
 import ytpl from 'ytpl';
 import { Command } from '..';
-import {
-  isPlaylist,
-  shuffle,
-  isVideo,
-  buildStatusEmbed,
-  getVideoId,
-  isSpotifyPlaylist,
-} from '../helpers';
+import { isPlaylist, shuffle, isVideo, buildStatusEmbed, getVideoId } from '../helpers';
+import { isSpotifyUrl } from '../Spotify';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
 
@@ -56,8 +50,8 @@ export default {
         });
         return;
       }
-      if (isSpotifyPlaylist(query)) {
-        let tracks = await client.spotify.getPlaylistTracks(query);
+      if (isSpotifyUrl(query)) {
+        let tracks = await client.spotify.resolveUrl(query);
         if (shouldShuffle) {
           tracks = shuffle(tracks);
         }
