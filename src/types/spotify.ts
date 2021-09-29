@@ -25,6 +25,14 @@ interface AlbumTrack extends ExternalUrls {
   artists: Artist[];
 }
 
+interface ArtistTrack extends ExternalUrls {
+  name: string;
+  artists: Artist[];
+  album: {
+    images: Image[];
+  };
+}
+
 interface PlaylistTrack extends ExternalUrls {
   track: {
     name: string;
@@ -42,6 +50,10 @@ export interface AlbumsAPIResponse extends ExternalUrls {
   tracks: {
     items: AlbumTrack[];
   };
+}
+
+export interface ArtistsAPIResponse {
+  tracks: ArtistTrack[];
 }
 
 export interface PlaylistsAPIResponse {

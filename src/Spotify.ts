@@ -4,6 +4,7 @@ import type {
   ClientCredentialsResponse,
   AlbumsAPIResponse,
   PlaylistsAPIResponse,
+  ArtistsAPIResponse,
 } from './types/spotify';
 import Track from './Track';
 import ytsearch from './ytsearch';
@@ -70,6 +71,24 @@ class Spotify {
     );
   }
 
+  public async getArtistTracks(id: string): Promise<Track[]> {
+    const response = await this.fetch(`/artists/${id}/top-tracks`, { market: 'US' });
+    if (!response.ok) throw new Error('Could not get artist tracks');
+    const data: ArtistsAPIResponse = await response.json();
+    return Promise.all(
+      data.tracks.map(async (track) => {
+        const artists = track.artists.map((artist) => artist.name).join(' ');
+        const url = await ytsearch(`${track.name} ${artists}`);
+        return new Track({
+          title: track.name,
+          url,
+          sourceUrl: track.external_urls.spotify,
+          thumbnail: bestThumbnail(track.album.images).url,
+        });
+      }),
+    );
+  }
+
   public async getPlaylistTracks(id: string): Promise<Track[]> {
     const response = await this.fetch(`/playlists/${id}/tracks`, {
       fields: 'items(track(name,external_urls(spotify),artists(name),album(name,images)))',
@@ -99,7 +118,7 @@ class Spotify {
       case 'album':
         return this.getAlbumTracks(id);
       case 'artist':
-        throw new Error('Not implemented');
+        return this.getArtistTracks(id);
       case 'track':
         throw new Error('Not implemented');
       case 'playlist':
