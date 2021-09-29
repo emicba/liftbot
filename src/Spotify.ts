@@ -5,6 +5,7 @@ import type {
   AlbumsAPIResponse,
   PlaylistsAPIResponse,
   ArtistsAPIResponse,
+  TracksAPIResponse,
 } from './types/spotify';
 import Track from './Track';
 import ytsearch from './ytsearch';
@@ -53,7 +54,7 @@ class Spotify {
     });
   }
 
-  public async getAlbumTracks(id: string): Promise<any> {
+  private async getAlbumTracks(id: string): Promise<any> {
     const response = await this.fetch(`/albums/${id}`);
     if (!response.ok) throw new Error('Could not get album tracks');
     const data: AlbumsAPIResponse = await response.json();
@@ -71,7 +72,7 @@ class Spotify {
     );
   }
 
-  public async getArtistTracks(id: string): Promise<Track[]> {
+  private async getArtistTracks(id: string): Promise<Track[]> {
     const response = await this.fetch(`/artists/${id}/top-tracks`, { market: 'US' });
     if (!response.ok) throw new Error('Could not get artist tracks');
     const data: ArtistsAPIResponse = await response.json();
@@ -89,7 +90,21 @@ class Spotify {
     );
   }
 
-  public async getPlaylistTracks(id: string): Promise<Track[]> {
+  private async getTrack(id: string): Promise<Track> {
+    const response = await this.fetch(`/tracks/${id}`);
+    if (!response.ok) throw new Error('Could not get track');
+    const data: TracksAPIResponse = await response.json();
+    const artists = data.artists.map((artist) => artist.name).join(' ');
+    const url = await ytsearch(`${data.name} ${artists}`);
+    return new Track({
+      title: data.name,
+      url,
+      sourceUrl: data.external_urls.spotify,
+      thumbnail: bestThumbnail(data.album.images).url,
+    });
+  }
+
+  private async getPlaylistTracks(id: string): Promise<Track[]> {
     const response = await this.fetch(`/playlists/${id}/tracks`, {
       fields: 'items(track(name,external_urls(spotify),artists(name),album(name,images)))',
     });
@@ -109,7 +124,7 @@ class Spotify {
     );
   }
 
-  public async resolveUrl(url: string): Promise<Track[]> {
+  public async resolveUrl(url: string): Promise<Track | Track[]> {
     const { type, id }: Partial<{ [key: string]: string }> = SPOTIFY_REGEX.exec(url)?.groups ?? {};
     if (!type || !id || id.length !== 22) {
       throw new Error('Invalid URL');
@@ -120,7 +135,7 @@ class Spotify {
       case 'artist':
         return this.getArtistTracks(id);
       case 'track':
-        throw new Error('Not implemented');
+        return this.getTrack(id);
       case 'playlist':
         return this.getPlaylistTracks(id);
       default:

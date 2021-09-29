@@ -52,7 +52,7 @@ export default {
       }
       if (isSpotifyUrl(query)) {
         let tracks = await client.spotify.resolveUrl(query);
-        if (shouldShuffle) {
+        if (shouldShuffle && Array.isArray(tracks)) {
           tracks = shuffle(tracks);
         }
         const response = await subscription.enqueue(tracks);

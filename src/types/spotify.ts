@@ -16,6 +16,11 @@ interface ExternalUrls {
   external_urls: { spotify: string };
 }
 
+interface Album {
+  name: string;
+  images: Image[];
+}
+
 interface Artist extends ExternalUrls {
   name: string;
 }
@@ -28,18 +33,13 @@ interface AlbumTrack extends ExternalUrls {
 interface ArtistTrack extends ExternalUrls {
   name: string;
   artists: Artist[];
-  album: {
-    images: Image[];
-  };
+  album: Album;
 }
 
 interface PlaylistTrack extends ExternalUrls {
   track: {
     name: string;
-    album: {
-      name: string;
-      images: Image[];
-    };
+    album: Album;
     artists: Artist[];
   } & ExternalUrls;
 }
@@ -54,6 +54,10 @@ export interface AlbumsAPIResponse extends ExternalUrls {
 
 export interface ArtistsAPIResponse {
   tracks: ArtistTrack[];
+}
+
+export interface TracksAPIResponse extends AlbumTrack {
+  album: Album;
 }
 
 export interface PlaylistsAPIResponse {
