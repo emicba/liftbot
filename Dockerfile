@@ -2,6 +2,7 @@ FROM node:16.6.1-alpine AS build
 
 RUN apk add --no-cache \
     python3 g++ make zlib-dev
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 USER node
 
@@ -19,8 +20,8 @@ FROM node:16.6.1-alpine AS app
 
 ENV NODE_ENV=production
 
-RUN apk add --no-cache python3 ffmpeg && \
-    ln -s /usr/bin/python3 /usr/bin/python
+RUN apk add --no-cache python3 ffmpeg
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 USER node
 
