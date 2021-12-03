@@ -30,4 +30,4 @@ WORKDIR /app
 COPY --chown=node:node --from=build /app/node_modules ./node_modules
 COPY --chown=node:node --from=build /app/dist ./dist
 
-CMD node dist/index.js
+CMD ["node", "dist/index.js"]

@@ -49,4 +49,6 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+process.on('SIGTERM', () => process.exit(0));
+
 client.login(env.TOKEN);
