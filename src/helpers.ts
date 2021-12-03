@@ -1,4 +1,5 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
+import type { YtFlags } from 'youtube-dl-exec';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
 import { ResponseStatus } from './Subscription';
@@ -8,11 +9,11 @@ export const isVideo = ytdl.validateURL;
 export const getVideoId = ytdl.getVideoID;
 export const isPlaylist = ytpl.validateID;
 
-export const ytdlFlags = {
-  o: '-',
-  q: '',
-  f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
-  r: '100K',
+export const ytdlFlags: YtFlags = {
+  output: '-',
+  quiet: true,
+  format: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
+  limitRate: '100K',
 };
 
 export function shuffle<T>(arr: T[]) {

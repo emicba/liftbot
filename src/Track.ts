@@ -1,6 +1,6 @@
 import { AudioResource, createAudioResource, demuxProbe } from '@discordjs/voice';
 import { getInfo } from 'ytdl-core';
-import { raw as ytdl } from 'youtube-dl-exec';
+import { exec as ytdl } from 'youtube-dl-exec';
 import ytpl from 'ytpl';
 import { bestThumbnail, Image, ytdlFlags } from './helpers';
 
