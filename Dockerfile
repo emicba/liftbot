@@ -1,4 +1,6 @@
-FROM node:16.6.1-alpine AS build
+ARG NODE_VERSION=16.15.1
+
+FROM node:${NODE_VERSION}-alpine AS build
 
 RUN apk add --no-cache \
     python3 g++ make zlib-dev
@@ -16,7 +18,7 @@ COPY --chown=node:node . .
 RUN npm run build
 
 
-FROM node:16.6.1-alpine AS app
+FROM node:${NODE_VERSION}-alpine AS app
 
 ENV NODE_ENV=production
 
