@@ -1,13 +1,13 @@
-import fetch, { Response } from 'node-fetch';
+import { request } from 'undici';
 import { bestThumbnail } from './helpers';
+import Track from './Track';
 import type {
-  ClientCredentialsResponse,
   AlbumsAPIResponse,
-  PlaylistsAPIResponse,
   ArtistsAPIResponse,
+  ClientCredentialsResponse,
+  PlaylistsAPIResponse,
   TracksAPIResponse,
 } from './types/spotify';
-import Track from './Track';
 import ytsearch from './ytsearch';
 
 const SPOTIFY_REGEX = /https:\/\/open\.spotify\.com\/(?<type>\w+)\/(?<id>[a-zA-Z0-9]{22})/;
@@ -32,9 +32,11 @@ class Spotify {
   }
 
   private async refreshAnonymousToken() {
-    const response = await fetch('https://open.spotify.com/get_access_token');
-    if (!response.ok) throw new Error('Could not get Spotify anonymous token');
-    const data: ClientCredentialsResponse = await response.json();
+    const { statusCode, body } = await request('https://open.spotify.com/get_access_token', {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    });
+    if (statusCode !== 200) throw new Error('Could not get Spotify anonymous token');
+    const data: ClientCredentialsResponse = await body.json();
     this.token = data.accessToken;
     if (this.tokenTimeout !== undefined) {
       clearTimeout(this.tokenTimeout);
@@ -45,19 +47,19 @@ class Spotify {
     );
   }
 
-  private async fetch(url: string, searchParams = {}): Promise<Response> {
-    const params = new URLSearchParams(searchParams);
-    return fetch(`${BASE_URL}${url}?${params.toString()}`, {
+  private async fetch(url: string, query = {}) {
+    return request(`${BASE_URL}${url}`, {
       headers: {
         Authorization: `Bearer ${this.token}`,
       },
+      query,
     });
   }
 
   private async getAlbumTracks(id: string): Promise<any> {
-    const response = await this.fetch(`/albums/${id}`);
-    if (!response.ok) throw new Error('Could not get album tracks');
-    const data: AlbumsAPIResponse = await response.json();
+    const { statusCode, body } = await this.fetch(`/albums/${id}`);
+    if (statusCode !== 200) throw new Error('Could not get album tracks');
+    const data: AlbumsAPIResponse = await body.json();
     return Promise.all(
       data.tracks.items.map(async (track) => {
         const artists = track.artists.map((artist) => artist.name).join(' ');
@@ -73,9 +75,9 @@ class Spotify {
   }
 
   private async getArtistTracks(id: string): Promise<Track[]> {
-    const response = await this.fetch(`/artists/${id}/top-tracks`, { market: 'US' });
-    if (!response.ok) throw new Error('Could not get artist tracks');
-    const data: ArtistsAPIResponse = await response.json();
+    const { statusCode, body } = await this.fetch(`/artists/${id}/top-tracks`, { market: 'US' });
+    if (statusCode !== 200) throw new Error('Could not get artist tracks');
+    const data: ArtistsAPIResponse = await body.json();
     return Promise.all(
       data.tracks.map(async (track) => {
         const artists = track.artists.map((artist) => artist.name).join(' ');
@@ -91,9 +93,9 @@ class Spotify {
   }
 
   private async getTrack(id: string): Promise<Track> {
-    const response = await this.fetch(`/tracks/${id}`);
-    if (!response.ok) throw new Error('Could not get track');
-    const data: TracksAPIResponse = await response.json();
+    const { statusCode, body } = await this.fetch(`/tracks/${id}`);
+    if (statusCode !== 200) throw new Error('Could not get track');
+    const data: TracksAPIResponse = await body.json();
     const artists = data.artists.map((artist) => artist.name).join(' ');
     const url = await ytsearch(`${data.name} ${artists}`);
     return new Track({
@@ -105,11 +107,11 @@ class Spotify {
   }
 
   private async getPlaylistTracks(id: string): Promise<Track[]> {
-    const response = await this.fetch(`/playlists/${id}/tracks`, {
+    const { statusCode, body } = await this.fetch(`/playlists/${id}/tracks`, {
       fields: 'items(track(name,external_urls(spotify),artists(name),album(name,images)))',
     });
-    if (!response.ok) throw new Error('Could not get playlist tracks');
-    const data: PlaylistsAPIResponse = await response.json();
+    if (statusCode !== 200) throw new Error('Could not get playlist tracks');
+    const data: PlaylistsAPIResponse = await body.json();
     return Promise.all(
       data.items.map(async ({ track }) => {
         const artists = track.artists.map((artist) => artist.name).join(' ');
