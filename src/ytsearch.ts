@@ -2,7 +2,7 @@ import { request } from 'undici';
 
 async function ytsearch(query: string, limit?: 1): Promise<string>;
 async function ytsearch(query: string, limit: number): Promise<string[]>;
-async function ytsearch(query: string, limit: number = 1): Promise<string | string[]> {
+async function ytsearch(query: string, limit = 1): Promise<string | string[]> {
   const { statusCode, body } = await request('https://www.youtube.com/results?', {
     query: { search_query: query },
   });

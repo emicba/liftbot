@@ -129,6 +129,7 @@ export default class Subscription extends TypedEmitter<SubscriptionEvents> {
       return ResponseStatus.QUEUED;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const nextTrack = this.queue.shift()!;
     try {
       const resource = await nextTrack.createAudioResouce();
