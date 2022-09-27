@@ -26,7 +26,11 @@ commandFiles.forEach(async (file) => {
 });
 
 client.once('ready', async () => {
-  console.log('✨');
+  console.log('✨ Client is ready');
+
+  if (env.isProduction) {
+    await client.updateSlashCommands();
+  }
 });
 
 client.on('interactionCreate', async (interaction) => {

@@ -1,5 +1,6 @@
 import { entersState, joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
 import {
+  ChatInputApplicationCommandData,
   Client as DiscordClient,
   Collection,
   GuildMember,
@@ -72,6 +73,23 @@ class Client extends DiscordClient {
     }
 
     return subscription;
+  }
+
+  async updateSlashCommands() {
+    const commands: ChatInputApplicationCommandData[] = [];
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    this.commands.forEach(({ aliases, execute, selectMenu, ...command }) => {
+      commands.push(command);
+    });
+
+    if (!this.application) {
+      throw new Error('Client is not ready yet');
+    }
+
+    await this.application.commands.set(commands);
+
+    console.log(`Successfully registered ${commands.length} application commands.`);
   }
 }
 
