@@ -1,10 +1,12 @@
-import { MessageEmbed } from 'discord.js';
+import { MessageEmbed, SlashCommandBuilder } from 'discord.js';
 import { Command } from '..';
 import { replyNotPlayingErr } from '../helpers';
 
 export default {
-  name: 'whatplaying',
-  description: 'Describes the playing song',
+  data: new SlashCommandBuilder()
+    .setName('whatplaying')
+    .setDescription('Describes the playing song')
+    .toJSON(),
   aliases: ['nowplaying'],
   async execute(client, interaction) {
     if (!interaction.guildId) return;

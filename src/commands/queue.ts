@@ -1,10 +1,12 @@
-import { MessageEmbed } from 'discord.js';
+import { MessageEmbed, SlashCommandBuilder } from 'discord.js';
 import type { Command } from '..';
 import { replyNotPlayingErr } from '../helpers';
 
 export default {
-  name: 'queue',
-  description: 'Shows the current queue',
+  data: new SlashCommandBuilder()
+    .setName('queue')
+    .setDescription('Shows the current queue')
+    .toJSON(),
   async execute(client, interaction) {
     if (!interaction.guildId) return;
     const subscription = client.subscriptions.get(interaction.guildId);

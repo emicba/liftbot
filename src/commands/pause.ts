@@ -1,10 +1,10 @@
+import { SlashCommandBuilder } from 'discord.js';
 import { Command } from '..';
 import { buildStatusEmbed, replyNotPlayingErr } from '../helpers';
 import { ResponseStatus } from '../Subscription';
 
 export default {
-  name: 'pause',
-  description: 'Pauses the player',
+  data: new SlashCommandBuilder().setName('pause').setDescription('Pauses the player').toJSON(),
   async execute(client, interaction) {
     if (!interaction.guildId) return;
     const subscription = client.subscriptions.get(interaction.guildId);

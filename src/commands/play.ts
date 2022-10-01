@@ -1,26 +1,22 @@
+import { SlashCommandBuilder } from 'discord.js';
 import ytpl from 'ytpl';
 import { Command } from '..';
-import { isPlaylist, shuffle, isVideo, buildStatusEmbed, getVideoId } from '../helpers';
+import { buildStatusEmbed, getVideoId, isPlaylist, isVideo, shuffle } from '../helpers';
 import { isSpotifyUrl } from '../Spotify';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
 
 export default {
-  name: 'play',
-  description: 'Play audio from Youtube',
-  options: [
-    {
-      name: 'query',
-      description: 'video title or url',
-      type: 'STRING',
-      required: true,
-    },
-    {
-      name: 'shuffle',
-      description: 'shuffle playlist before adding it to queue',
-      type: 'BOOLEAN',
-    },
-  ],
+  data: new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Play audio from Youtube')
+    .addStringOption((o) =>
+      o.setName('query').setDescription('video title or url').setRequired(true),
+    )
+    .addBooleanOption((o) =>
+      o.setName('shuffle').setDescription('shuffle playlist before adding it to queue'),
+    )
+    .toJSON(),
   async execute(client, interaction) {
     const { options, guildId, member } = interaction;
     if (!guildId) return;
