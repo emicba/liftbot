@@ -3,8 +3,8 @@ import {
   ChatInputApplicationCommandData,
   Client as DiscordClient,
   Collection,
+  GatewayIntentBits,
   GuildMember,
-  Intents,
   Interaction,
   Snowflake,
 } from 'discord.js';
@@ -22,9 +22,9 @@ class Client extends DiscordClient {
   constructor() {
     super({
       intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_VOICE_STATES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildVoiceStates,
       ],
     });
     this.commands = new Collection();
