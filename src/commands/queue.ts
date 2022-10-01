@@ -1,4 +1,4 @@
-import { MessageEmbed, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { Command } from '..';
 import { replyNotPlayingErr } from '../helpers';
 
@@ -23,7 +23,7 @@ export default {
     const tracksText = tracks
       .map((track, index) => `\`${index + 1}.\` [${track.title}](${track.link})\n`)
       .join('\n');
-    const embed = new MessageEmbed().setColor('RANDOM').setTitle('Queue').setDescription(`
+    const embed = new EmbedBuilder().setColor('Random').setTitle('Queue').setDescription(`
         __Now Playling__
         [${nowPlaying.title}](${nowPlaying.link})
 

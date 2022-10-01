@@ -1,4 +1,4 @@
-import { MessageEmbed, SlashCommandBuilder } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { Command } from '..';
 import { replyNotPlayingErr, shuffle } from '../helpers';
 
@@ -22,8 +22,8 @@ export default {
 
     await interaction.followUp({
       embeds: [
-        new MessageEmbed()
-          .setColor('RANDOM')
+        new EmbedBuilder()
+          .setColor('Random')
           .setTitle('Shuffled queue')
           .setDescription('The queue has been shuffled.'),
       ],

@@ -1,4 +1,4 @@
-import { MessageActionRow, MessageSelectMenu, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, SelectMenuBuilder, SlashCommandBuilder } from 'discord.js';
 import ms from 'ms';
 import { getInfo } from 'ytdl-core';
 import { Command } from '..';
@@ -37,9 +37,9 @@ export default {
       }),
     );
 
-    const select = new MessageActionRow().addComponents(
-      new MessageSelectMenu()
-        .setCustomId(this.name)
+    const select = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+      new SelectMenuBuilder()
+        .setCustomId(this.data.name)
         .setPlaceholder('Select tracks')
         .setMinValues(1)
         .addOptions(
