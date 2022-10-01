@@ -1,22 +1,17 @@
-import { MessageActionRow, MessageSelectMenu } from 'discord.js';
-import { getInfo } from 'ytdl-core';
+import { ActionRowBuilder, SelectMenuBuilder, SlashCommandBuilder } from 'discord.js';
 import ms from 'ms';
+import { getInfo } from 'ytdl-core';
 import { Command } from '..';
 import { buildStatusEmbed } from '../helpers';
 import Track from '../Track';
 import ytsearch from '../ytsearch';
 
 export default {
-  name: 'search',
-  description: 'Search (and pick) tracks from Youtube',
-  options: [
-    {
-      name: 'query',
-      description: 'video title',
-      type: 'STRING',
-      required: true,
-    },
-  ],
+  data: new SlashCommandBuilder()
+    .setName('search')
+    .setDescription('Search (and pick) tracks from Youtube')
+    .addStringOption((o) => o.setName('query').setDescription('video title').setRequired(true))
+    .toJSON(),
   async execute(client, interaction) {
     const { options, guildId } = interaction;
     const query = options.getString('query', true);
@@ -42,9 +37,9 @@ export default {
       }),
     );
 
-    const select = new MessageActionRow().addComponents(
-      new MessageSelectMenu()
-        .setCustomId(this.name)
+    const select = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+      new SelectMenuBuilder()
+        .setCustomId(this.data.name)
         .setPlaceholder('Select tracks')
         .setMinValues(1)
         .addOptions(

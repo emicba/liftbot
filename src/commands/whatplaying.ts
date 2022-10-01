@@ -1,10 +1,12 @@
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { Command } from '..';
 import { replyNotPlayingErr } from '../helpers';
 
 export default {
-  name: 'whatplaying',
-  description: 'Describes the playing song',
+  data: new SlashCommandBuilder()
+    .setName('whatplaying')
+    .setDescription('Describes the playing song')
+    .toJSON(),
   aliases: ['nowplaying'],
   async execute(client, interaction) {
     if (!interaction.guildId) return;
@@ -19,8 +21,8 @@ export default {
 
     interaction.reply({
       embeds: [
-        new MessageEmbed()
-          .setColor('RANDOM')
+        new EmbedBuilder()
+          .setColor('Random')
           .setTitle(title)
           .setURL(link)
           .setImage(thumbnail || ''),

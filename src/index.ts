@@ -1,6 +1,6 @@
 import type {
-  ChatInputApplicationCommandData,
-  CommandInteraction,
+  ChatInputCommandInteraction,
+  RESTPostAPIApplicationCommandsJSONBody,
   SelectMenuInteraction,
 } from 'discord.js';
 import fs from 'fs';
@@ -9,9 +9,10 @@ import env from './env';
 
 const client = new Client();
 
-export interface Command extends ChatInputApplicationCommandData {
+export interface Command {
+  data: RESTPostAPIApplicationCommandsJSONBody;
   aliases?: string[];
-  execute: (client: Client, interaction: CommandInteraction) => void;
+  execute: (client: Client, interaction: ChatInputCommandInteraction) => void;
   selectMenu?: (client: Client, interaction: SelectMenuInteraction) => void;
 }
 
@@ -19,9 +20,11 @@ const commandFiles = fs.readdirSync(`${__dirname}/commands`);
 
 commandFiles.forEach(async (file) => {
   const command: Command = (await import(`${__dirname}/commands/${file}`)).default;
-  client.commands.set(command.name, command);
+  client.commands.set(command.data.name, command);
   if (command.aliases) {
-    command.aliases.forEach((alias) => client.commands.set(alias, { ...command, name: alias }));
+    command.aliases.forEach((alias) =>
+      client.commands.set(alias, { ...command, data: { ...command.data, name: alias } }),
+    );
   }
 });
 
@@ -34,7 +37,7 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (interaction.isCommand()) {
+  if (interaction.isChatInputCommand()) {
     const { commandName } = interaction;
     client.commands.get(commandName)?.execute(client, interaction);
     return;

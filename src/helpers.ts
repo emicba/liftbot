@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import type { YtFlags } from 'youtube-dl-exec';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
@@ -50,7 +50,7 @@ export function replyNotPlayingErr(interaction: CommandInteraction) {
 export function buildStatusEmbed(status: ResponseStatus, entry: Track | Track[]) {
   const _entry = Array.isArray(entry) && entry.length === 1 ? entry[0] : entry;
   const title = `${status} ${Array.isArray(_entry) ? `${_entry.length} tracks` : _entry.title}`;
-  const embed = new MessageEmbed().setColor('RANDOM').setTitle(title);
+  const embed = new EmbedBuilder().setColor('Random').setTitle(title);
   if (!Array.isArray(_entry)) embed.setURL(_entry.url).setImage(_entry.thumbnail || '');
   return embed;
 }

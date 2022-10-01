@@ -1,10 +1,9 @@
 import { entersState, joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
 import {
-  ChatInputApplicationCommandData,
   Client as DiscordClient,
   Collection,
+  GatewayIntentBits,
   GuildMember,
-  Intents,
   Interaction,
   Snowflake,
 } from 'discord.js';
@@ -22,9 +21,9 @@ class Client extends DiscordClient {
   constructor() {
     super({
       intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_VOICE_STATES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildVoiceStates,
       ],
     });
     this.commands = new Collection();
@@ -76,12 +75,7 @@ class Client extends DiscordClient {
   }
 
   async updateSlashCommands() {
-    const commands: ChatInputApplicationCommandData[] = [];
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    this.commands.forEach(({ aliases, execute, selectMenu, ...command }) => {
-      commands.push(command);
-    });
+    const commands = this.commands.map((c) => c.data);
 
     if (!this.application) {
       throw new Error('Client is not ready yet');
